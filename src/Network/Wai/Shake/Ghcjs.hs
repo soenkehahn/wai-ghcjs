@@ -39,11 +39,11 @@ serveGhcjs mainFile sourceDirs request respond = respond =<< do
 
 createJsToConsole :: String -> LBS.ByteString
 createJsToConsole msg =
-  let escaped :: String
-      escaped = show $ prettyPrint (string msg :: Expression ())
-  in cs $ unindent [i|
-       console.log(#{escaped});
-     |]
+  let escape :: String -> String
+      escape s =
+        show $ prettyPrint (string (doublePercentSigns s) :: Expression ())
+      doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
+  in cs $ unlines $ map (\ line -> [i|console.log(#{escape line});|]) (lines msg)
 
 serveFile :: String -> FilePath -> IO Response
 serveFile contentType file = do

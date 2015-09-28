@@ -120,11 +120,12 @@ spec = do
 
   describe "createJsToConsole" $ do
     it "creates a js file that outputs the given string" $ do
-      property $ forAllShrink (listOf (suchThat arbitrary isPrint)) (shrinkValidList isPrint) $ \ s ->
-        inTempDirectory $ do
-          LBS.writeFile "test.js" (createJsToConsole s)
-          output <- capture_ $ callCommand "node test.js"
-          output `shouldBe` s
+      property $ forAllShrink (listOf (suchThat arbitrary isPrint)) (shrinkValidList isPrint) $
+        \ ((++ "\n") -> s) ->
+          inTempDirectory $ do
+            LBS.writeFile "test.js" (createJsToConsole s)
+            output <- capture_ $ callCommand "node test.js"
+            output `shouldBe` s
 
 getAndExecuteJs :: String -> WaiSession String
 getAndExecuteJs urlPath = do
