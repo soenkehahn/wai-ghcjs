@@ -1,0 +1,50 @@
+name: wai-shake
+version: "0.1"
+category: Web
+author: Linh Nguyen, Sönke Hahn
+maintainer: linh.nguyen@zalora.com, soenke.hahn@zalora.com
+synopsis: serve compilation results through a wai application
+description: serve compilation results through a wai application
+license: "BSD3"
+
+dependencies:
+  - base == 4.*
+  - string-conversions
+  - language-ecmascript
+  - bytestring
+  - wai
+  - process
+  - data-default
+  - interpolate
+  - http-types
+  - filepath
+  - temporary
+
+library:
+  source-dirs:
+    - src
+
+executables:
+  serve-ghcjs:
+    main: serve-ghcjs.hs
+    source-dirs:
+      - drivers
+      - src
+    dependencies:
+      - warp
+      - getopt-generics == 0.11.*
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - hspec
+      - mockery
+      - hspec-wai
+      - silently
+      - directory
+      - QuickCheck
+      - wai-extra

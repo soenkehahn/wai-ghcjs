@@ -1,0 +1,87 @@
+-- This file has been generated from package.yaml by hpack version 0.5.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           wai-shake
+version:        0.1
+synopsis:       serve compilation results through a wai application
+description:    serve compilation results through a wai application
+category:       Web
+author:         Linh Nguyen, Sönke Hahn
+maintainer:     linh.nguyen@zalora.com, soenke.hahn@zalora.com
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+library
+  hs-source-dirs:
+      src
+  build-depends:
+      base == 4.*
+    , string-conversions
+    , language-ecmascript
+    , bytestring
+    , wai
+    , process
+    , data-default
+    , interpolate
+    , http-types
+    , filepath
+    , temporary
+  exposed-modules:
+      Network.Wai.Shake.Ghcjs
+  default-language: Haskell2010
+
+executable serve-ghcjs
+  main-is: serve-ghcjs.hs
+  hs-source-dirs:
+      drivers
+    , src
+  build-depends:
+      base == 4.*
+    , string-conversions
+    , language-ecmascript
+    , bytestring
+    , wai
+    , process
+    , data-default
+    , interpolate
+    , http-types
+    , filepath
+    , temporary
+    , warp
+    , getopt-generics == 0.11.*
+  other-modules:
+      Network.Wai.Shake.Ghcjs
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+    , src
+  build-depends:
+      base == 4.*
+    , string-conversions
+    , language-ecmascript
+    , bytestring
+    , wai
+    , process
+    , data-default
+    , interpolate
+    , http-types
+    , filepath
+    , temporary
+    , hspec
+    , mockery
+    , hspec-wai
+    , silently
+    , directory
+    , QuickCheck
+    , wai-extra
+  other-modules:
+      Network.Wai.Shake.GhcjsSpec
+      Network.Wai.Shake.Ghcjs
+  default-language: Haskell2010
