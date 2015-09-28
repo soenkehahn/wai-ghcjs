@@ -50,16 +50,15 @@ spec = do
           liftIO $ output `shouldContain`
             "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
-    forM_ ["all", "rts", "lib", "out", "runmain"] $ \ file -> do
-      let jsFile = file <.> "js"
-      it ("serves " ++ jsFile) $ do
-      inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
-          get ("/" <> cs jsFile) `shouldRespondWith` 200 {
-            matchHeaders = ["Content-Type" <:> "application/javascript; charset=utf-8"]
-          }
+    forM_ ["all.js", "rts.js", "lib.js", "out.js", "runmain.js"] $ \ file -> do
+      it ("serves " ++ file) $ do
+        inTempDirectory $ do
+          createDirectoryIfMissing True "src"
+          writeFile "src/Main.hs" $ mkCode "huhu"
+          flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+            get ("/" <> cs file) `shouldRespondWith` 200 {
+              matchHeaders = ["Content-Type" <:> "application/javascript; charset=utf-8"]
+            }
 
     it "compiles haskell files to javascript" $ do
       inTempDirectory $ do
