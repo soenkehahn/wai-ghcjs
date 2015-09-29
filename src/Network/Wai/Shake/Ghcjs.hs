@@ -2,6 +2,7 @@
 
 module Network.Wai.Shake.Ghcjs where
 
+import           Control.Monad
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Default
 import           Data.String.Conversions
@@ -51,7 +52,9 @@ serveFile contentType file = do
 
 initializeFiles :: String -> IO ()
 initializeFiles outPattern = do
-  withSystemTempDirectory "serve-ghcjs" $ \ dir -> do
-    let mainFile = dir </> "Main.hs"
-    writeFile mainFile "main = return ()"
-    callCommand (unwords ["ghcjs", "-O0", mainFile, "-o", outPattern])
+  indexExists <- doesFileExist (outPattern <.> "jsexe" </> "index.html")
+  when (not indexExists) $ do
+    withSystemTempDirectory "serve-ghcjs" $ \ dir -> do
+      let mainFile = dir </> "Main.hs"
+      writeFile mainFile "main = return ()"
+      callCommand (unwords ["ghcjs", "-O0", mainFile, "-o", outPattern])
