@@ -15,7 +15,6 @@ dependencies:
   - wai
   - process
   - data-default
-  - interpolate
   - http-types
   - filepath
   - temporary
@@ -48,3 +47,4 @@ tests:
       - directory
       - QuickCheck
       - wai-extra
+      - interpolate

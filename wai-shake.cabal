@@ -25,7 +25,6 @@ library
     , wai
     , process
     , data-default
-    , interpolate
     , http-types
     , filepath
     , temporary
@@ -46,7 +45,6 @@ executable serve-ghcjs
     , wai
     , process
     , data-default
-    , interpolate
     , http-types
     , filepath
     , temporary
@@ -70,7 +68,6 @@ test-suite spec
     , wai
     , process
     , data-default
-    , interpolate
     , http-types
     , filepath
     , temporary
@@ -81,6 +78,7 @@ test-suite spec
     , directory
     , QuickCheck
     , wai-extra
+    , interpolate
   other-modules:
       Network.Wai.Shake.GhcjsSpec
       Network.Wai.Shake.Ghcjs

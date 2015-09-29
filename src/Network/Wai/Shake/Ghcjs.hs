@@ -1,13 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 
 module Network.Wai.Shake.Ghcjs where
 
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Default
 import           Data.String.Conversions
-import           Data.String.Interpolate
-import           Data.String.Interpolate.Util
 import           Language.ECMAScript3.PrettyPrint
 import           Language.ECMAScript3.Syntax
 import           Language.ECMAScript3.Syntax.CodeGen
@@ -25,7 +22,7 @@ serveGhcjs mainFile sourceDirs request respond = respond =<< do
       sourceDirFlags = unwords $ map ("-i" ++) sourceDirs
   initializeFiles outPattern
   (exitCode, out, err) <- readProcessWithExitCode "ghcjs"
-    (words [i|-O0 #{mainFile} -o #{outPattern} #{sourceDirFlags}|])
+    ["-O0", mainFile, "-o", outPattern, sourceDirFlags]
     ""
   case pathInfo request of
     [] -> serveFile "text/html" (outDir </> "index" <.> "html")
@@ -43,7 +40,7 @@ createJsToConsole msg =
       escape s =
         show $ prettyPrint (string (doublePercentSigns s) :: Expression ())
       doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
-  in cs $ unlines $ map (\ line -> [i|console.log(#{escape line});|]) (lines msg)
+  in cs $ unlines $ map (\ line -> "console.log(" ++ escape line ++ ");") (lines msg)
 
 serveFile :: String -> FilePath -> IO Response
 serveFile contentType file = do
@@ -54,10 +51,8 @@ initializeFiles :: String -> IO ()
 initializeFiles outPattern = do
   withSystemTempDirectory "serve-ghcjs" $ \ dir -> do
     let mainFile = dir </> "Main.hs"
-    writeFile mainFile [i|
-      main = return ()
-    |]
+    writeFile mainFile "main = return ()"
     (ExitSuccess, out, err) <- readProcessWithExitCode "ghcjs"
-      (words [i|-O0 #{mainFile} -o #{outPattern}|])
+      ["-O0", mainFile, "-o", outPattern]
       ""
     return ()
