@@ -19,6 +19,7 @@ dependencies:
   - filepath
   - temporary
   - directory
+  - interpolate
 
 library:
   source-dirs:
@@ -47,4 +48,3 @@ tests:
       - silently
       - QuickCheck
       - wai-extra
-      - interpolate
