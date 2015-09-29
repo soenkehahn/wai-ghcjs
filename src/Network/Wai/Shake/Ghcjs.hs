@@ -10,19 +10,21 @@ import           Language.ECMAScript3.Syntax
 import           Language.ECMAScript3.Syntax.CodeGen
 import           Network.HTTP.Types
 import           Network.Wai
+import           System.Directory
 import           System.Exit
 import           System.FilePath
 import           System.IO.Temp
 import           System.Process
 
-serveGhcjs :: FilePath -> [FilePath] -> Application
-serveGhcjs mainFile sourceDirs request respond = respond =<< do
-  let outPattern = dropExtension mainFile
+serveGhcjs :: FilePath -> [FilePath] -> FilePath -> Application
+serveGhcjs mainFile sourceDirs buildDir request respond = respond =<< do
+  let outPattern = buildDir </> takeBaseName mainFile
       outDir = outPattern <.> "jsexe"
       sourceDirFlags = unwords $ map ("-i" ++) sourceDirs
+  createDirectoryIfMissing True buildDir
   initializeFiles outPattern
   (exitCode, out, err) <- readProcessWithExitCode "ghcjs"
-    ["-O0", mainFile, "-o", outPattern, sourceDirFlags]
+    ["-O0", mainFile, "-o", outPattern, sourceDirFlags, "-outputdir=" ++ buildDir </> "output"]
     ""
   case pathInfo request of
     [] -> serveFile "text/html" (outDir </> "index" <.> "html")
@@ -52,7 +54,4 @@ initializeFiles outPattern = do
   withSystemTempDirectory "serve-ghcjs" $ \ dir -> do
     let mainFile = dir </> "Main.hs"
     writeFile mainFile "main = return ()"
-    (ExitSuccess, out, err) <- readProcessWithExitCode "ghcjs"
-      ["-O0", mainFile, "-o", outPattern]
-      ""
-    return ()
+    callCommand (unwords ["ghcjs", "-O0", mainFile, "-o", outPattern])

@@ -6,6 +6,7 @@ module Main where
 import qualified GHC.Generics
 import           Network.Wai.Handler.Warp hiding (run)
 import           System.IO
+import           System.IO.Temp
 import           WithCli
 
 import           Network.Wai.Shake.Ghcjs
@@ -32,9 +33,9 @@ instance HasDatatypeInfo Options
 instance HasArguments Options
 
 run :: Options -> IO ()
-run o@Options{..} = do
+run o@Options{..} = withSystemTempDirectory "serve-ghcjs" $ \ tmpDir -> do
   let settings =
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  runSettings settings $ serveGhcjs mainIs sourceDirs
+  runSettings settings $ serveGhcjs mainIs sourceDirs tmpDir

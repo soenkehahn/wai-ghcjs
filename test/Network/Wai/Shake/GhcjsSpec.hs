@@ -17,6 +17,7 @@ import           Network.Wai.Test
 import           System.Directory
 import           System.FilePath
 import           System.IO.Silently
+import           System.IO.Temp
 import           System.Process
 import           Test.Hspec
 import           Test.Hspec.Wai hiding (pending)
@@ -36,7 +37,7 @@ spec = do
       inTempDirectory $ do
         createDirectoryIfMissing True "src"
         writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
           get "/" `shouldRespondWith` 200 {
             matchHeaders = ["Content-Type" <:> "text/html; charset=utf-8"]
           }
@@ -45,7 +46,7 @@ spec = do
       inTempDirectory $ do
         createDirectoryIfMissing True "src"
         writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
           output :: String <- cs <$> simpleBody <$> get "/"
           liftIO $ output `shouldContain`
             "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
@@ -55,7 +56,7 @@ spec = do
         inTempDirectory $ do
           createDirectoryIfMissing True "src"
           writeFile "src/Main.hs" $ mkCode "huhu"
-          flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+          flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
             get ("/" <> cs file) `shouldRespondWith` 200 {
               matchHeaders = ["Content-Type" <:> "application/javascript; charset=utf-8"]
             }
@@ -64,7 +65,7 @@ spec = do
       inTempDirectory $ do
         createDirectoryIfMissing True "src"
         writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "huhu\n")
 
@@ -72,7 +73,7 @@ spec = do
       inTempDirectory $ do
         createDirectoryIfMissing True "src"
         writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" []) $ do
+        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
           output <- getAndExecuteJs "all.js"
           liftIO $ output `shouldBe` "huhu\n"
           liftIO $ writeFile "src/Main.hs" $ mkCode "foo"
@@ -90,9 +91,21 @@ spec = do
           import Lib
           main = putStrLn text
         |]
-        flip runWaiSession (serveGhcjs "src/Main.hs" ["src"]) $ do
+        flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "foo\n")
+
+    it "puts all compilation results in the given build dir" $ do
+      withSystemTempDirectory "wai-shake" $ \ tmpDir -> do
+        inTempDirectory $ do
+          createDirectoryIfMissing True "src"
+          writeFile "src/Main.hs" $ mkCode "huhu"
+          flip runWaiSession (serveGhcjs "src/Main.hs" [] tmpDir) $ do
+            let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
+            before <- listFiles
+            get "/"
+            after <- listFiles
+            liftIO $ after `shouldMatchList` before
 
     context "when used with invalid haskell files" $ do
       it "serves the normal index.html" $ do
@@ -101,7 +114,7 @@ spec = do
           writeFile "src/Main.hs" $ unindent [i|
             main = putStrLn True
           |]
-          flip runWaiSession (serveGhcjs "src/Main.hs" ["src"]) $ do
+          flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
             output :: String <- cs <$> simpleBody <$> get "/"
             liftIO $ output `shouldContain`
               "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
@@ -113,7 +126,7 @@ spec = do
             writeFile "src/Main.hs" $ unindent [i|
               main = putStrLn True
             |]
-            flip runWaiSession (serveGhcjs "src/Main.hs" ["src"]) $ do
+            flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
               output <- getAndExecuteJs file
               liftIO $ output `shouldContain`
                 "Couldn't match type ‘Bool’ with ‘[Char]’"

@@ -28,6 +28,7 @@ library
     , http-types
     , filepath
     , temporary
+    , directory
   exposed-modules:
       Network.Wai.Shake.Ghcjs
   default-language: Haskell2010
@@ -48,6 +49,7 @@ executable serve-ghcjs
     , http-types
     , filepath
     , temporary
+    , directory
     , warp
     , getopt-generics == 0.11.*
   other-modules:
@@ -71,11 +73,11 @@ test-suite spec
     , http-types
     , filepath
     , temporary
+    , directory
     , hspec
     , mockery
     , hspec-wai
     , silently
-    , directory
     , QuickCheck
     , wai-extra
     , interpolate

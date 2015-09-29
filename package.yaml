@@ -18,6 +18,7 @@ dependencies:
   - http-types
   - filepath
   - temporary
+  - directory
 
 library:
   source-dirs:
@@ -44,7 +45,6 @@ tests:
       - mockery
       - hspec-wai
       - silently
-      - directory
       - QuickCheck
       - wai-extra
       - interpolate
