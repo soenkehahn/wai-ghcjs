@@ -42,13 +42,14 @@ ghcjsOrErrorToConsole mainFile sourceDirs buildDir = do
     ""
   case exitCode of
     ExitSuccess -> do
-      return ()
+      return outDir
     ExitFailure _ -> do
-      createDirectoryIfMissing True outDir
-      let jsCode = createJsToConsole (out ++ "\n" ++ err)
-      LBS.writeFile (outDir </> "runmain.js") jsCode
-      LBS.writeFile (outDir </> "all.js") jsCode
-      writeFile (outDir </> "index.html") $ unindent [i|
+      let errorOutDir = buildDir </> "errors"
+          jsCode = createJsToConsole (out ++ "\n" ++ err)
+      createDirectoryIfMissing True errorOutDir
+      LBS.writeFile (errorOutDir </> "runmain.js") jsCode
+      LBS.writeFile (errorOutDir </> "all.js") jsCode
+      writeFile (errorOutDir </> "index.html") $ unindent [i|
         <!DOCTYPE html>
         <html>
           <head>
@@ -58,7 +59,7 @@ ghcjsOrErrorToConsole mainFile sourceDirs buildDir = do
           <script language="javascript" src="runmain.js" defer></script>
         </html>
       |]
-  return outDir
+      return errorOutDir
 
 createJsToConsole :: String -> LBS.ByteString
 createJsToConsole msg =
