@@ -51,13 +51,13 @@ spec = do
           liftIO $ output `shouldContain`
             "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
-    forM_ ["all.js", "rts.js", "lib.js", "out.js", "runmain.js"] $ \ file -> do
-      it ("serves " ++ file) $ do
-        inTempDirectory $ do
-          createDirectoryIfMissing True "src"
-          writeFile "src/Main.hs" $ mkCode "huhu"
-          flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
-            get ("/" <> cs file) `shouldRespondWith` 200 {
+    it "serves javascript" $ do
+      inTempDirectory $ do
+        createDirectoryIfMissing True "src"
+        writeFile "src/Main.hs" $ mkCode "huhu"
+        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
+          forM_ ["all.js", "rts.js", "lib.js", "out.js", "runmain.js"] $ \ file -> do
+            get ("/" <> file) `shouldRespondWith` 200 {
               matchHeaders = ["Content-Type" <:> "application/javascript; charset=utf-8"]
             }
 
@@ -119,14 +119,14 @@ spec = do
             liftIO $ output `shouldContain`
               "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
-      forM_ ["all.js", "runmain.js"] $ \ file -> do
-        it ("outputs compiler errors to the javascript console in " ++ file) $ do
-          inTempDirectory $ do
-            createDirectoryIfMissing True "src"
-            writeFile "src/Main.hs" $ unindent [i|
-              main = putStrLn True
-            |]
-            flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
+      it "outputs compiler errors to the javascript console" $ do
+        inTempDirectory $ do
+          createDirectoryIfMissing True "src"
+          writeFile "src/Main.hs" $ unindent [i|
+            main = putStrLn True
+          |]
+          flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
+            forM_ ["all.js", "runmain.js"] $ \ file -> do
               output <- getAndExecuteJs file
               liftIO $ output `shouldContain`
                 "Couldn't match type ‘Bool’ with ‘[Char]’"
