@@ -6,16 +6,12 @@
 module Network.Wai.Shake.GhcjsSpec where
 
 import           Control.Monad
-import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Char
 import           Data.String.Conversions
 import           Data.String.Interpolate
 import           Data.String.Interpolate.Util
-import           Network.Wai
 import           Network.Wai.Test
-import           System.Directory
-import           System.FilePath
 import           System.IO.Silently
 import           System.IO.Temp
 import           System.Process
@@ -30,32 +26,34 @@ import           Network.Wai.Shake.Ghcjs
 spec :: Spec
 spec = do
   describe "serveGhcjs" $ do
-    let mkCode msg = [i|
+    let mkCode :: String -> String
+        mkCode msg = [i|
           main = putStrLn "#{msg}"
         |]
+        config = BuildConfig "Main.hs" [] "build"
     it "serves html on /" $ do
       inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
           get "/" `shouldRespondWith` 200 {
             matchHeaders = ["Content-Type" <:> "text/html; charset=utf-8"]
           }
 
     it "serves the generated index.html on /" $ do
       inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
           output :: String <- cs <$> simpleBody <$> get "/"
           liftIO $ output `shouldContain`
             "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
     it "serves javascript" $ do
       inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
           forM_ ["all.js", "rts.js", "lib.js", "out.js", "runmain.js"] $ \ file -> do
             get ("/" <> file) `shouldRespondWith` 200 {
               matchHeaders = ["Content-Type" <:> "application/javascript; charset=utf-8"]
@@ -63,82 +61,99 @@ spec = do
 
     it "compiles haskell files to javascript" $ do
       inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
-          output <- getAndExecuteJs "all.js"
-          liftIO (output `shouldBe` "huhu\n")
-
-    it "recompiles changed haskell sources" $ do
-      inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Main.hs" $ mkCode "huhu"
-        flip runWaiSession (serveGhcjs "src/Main.hs" [] "build") $ do
-          output <- getAndExecuteJs "all.js"
-          liftIO $ output `shouldBe` "huhu\n"
-          liftIO $ writeFile "src/Main.hs" $ mkCode "foo"
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "foo\n")
 
+    it "recompiles changed haskell sources" $ do
+      inTempDirectory $ do
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
+          _ <- getAndExecuteJs "all.js"
+          liftIO $ writeFile "Main.hs" $ mkCode "bar"
+          output <- getAndExecuteJs "all.js"
+          liftIO (output `shouldBe` "bar\n")
+
     it "allows to have multiple modules" $ do
       inTempDirectory $ do
-        createDirectoryIfMissing True "src"
-        writeFile "src/Lib.hs" $ unindent [i|
+        writeFile "Lib.hs" $ unindent [i|
           module Lib where
           text = "foo"
         |]
-        writeFile "src/Main.hs" $ unindent [i|
+        writeFile "Main.hs" $ unindent [i|
           import Lib
           main = putStrLn text
         |]
-        flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "foo\n")
 
     it "puts all compilation results in the given build dir" $ do
       withSystemTempDirectory "wai-shake" $ \ tmpDir -> do
         inTempDirectory $ do
-          createDirectoryIfMissing True "src"
-          writeFile "src/Main.hs" $ mkCode "huhu"
-          flip runWaiSession (serveGhcjs "src/Main.hs" [] tmpDir) $ do
+          writeFile "Main.hs" $ mkCode "foo"
+          app <- serveGhcjs config{buildDir = tmpDir}
+          flip runWaiSession app $ do
             let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
             before <- listFiles
-            get "/"
+            _ <- get "/"
             after <- listFiles
             liftIO $ after `shouldMatchList` before
+
+    it "overwrites index.html" $ do
+      inTempDirectory $ do
+        writeFile "Main.hs" $ unindent [i|
+          main = putStrLn True
+        |]
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
+          _ <- get "/"
+          liftIO $ writeFile "Main.hs" $ unindent [i|
+            main = putStrLn "foo"
+          |]
+          c :: String <- cs <$> simpleBody <$> get "/"
+          liftIO $ c `shouldNotContain` "outputErrors.js"
 
     context "when used with invalid haskell files" $ do
       it "serves the normal index.html" $ do
         inTempDirectory $ do
-          createDirectoryIfMissing True "src"
-          writeFile "src/Main.hs" $ unindent [i|
+          writeFile "Main.hs" $ unindent [i|
             main = putStrLn True
           |]
-          flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
+          app <- serveGhcjs config
+          flip runWaiSession app $ do
             output :: String <- cs <$> simpleBody <$> get "/"
             liftIO $ output `shouldContain`
-              "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
+              "<script language=\"javascript\" src=\"outputErrors.js\" defer></script>"
 
       it "outputs compiler errors to the javascript console" $ do
         inTempDirectory $ do
-          createDirectoryIfMissing True "src"
-          writeFile "src/Main.hs" $ unindent [i|
+          writeFile "Main.hs" $ unindent [i|
             main = putStrLn True
           |]
-          flip runWaiSession (serveGhcjs "src/Main.hs" ["src"] "build") $ do
-            forM_ ["all.js", "runmain.js"] $ \ file -> do
-              output <- getAndExecuteJs file
-              liftIO $ output `shouldContain`
-                "Couldn't match type ‘Bool’ with ‘[Char]’"
+          app <- serveGhcjs config
+          flip runWaiSession app $ do
+            indexHtml <- cs <$> simpleBody <$> get "/"
+            let errorJsFile = "outputErrors.js"
+            liftIO $ indexHtml `shouldContain` errorJsFile
+            output <- getAndExecuteJs errorJsFile
+            liftIO $ output `shouldContain`
+              "Couldn't match type ‘Bool’ with ‘[Char]’"
 
   describe "createJsToConsole" $ do
     it "creates a js file that outputs the given string" $ do
-      property $ forAllShrink (listOf (suchThat arbitrary isPrint)) (shrinkValidList isPrint) $
-        \ ((++ "\n") -> s) ->
-          inTempDirectory $ do
-            LBS.writeFile "test.js" (createJsToConsole s)
-            output <- capture_ $ callCommand "node test.js"
-            output `shouldBe` s
+      property $ forAllShrink
+        (listOf (suchThat arbitrary isPrint))
+        (shrinkValidList isPrint) $
+          \ ((++ "\n") -> s) ->
+            inTempDirectory $ do
+              LBS.writeFile "test.js" (createJsToConsole s)
+              output <- capture_ $ callCommand "node test.js"
+              output `shouldBe` s
 
 getAndExecuteJs :: String -> WaiSession String
 getAndExecuteJs urlPath = do

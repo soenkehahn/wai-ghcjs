@@ -7,6 +7,9 @@ synopsis: serve compilation results through a wai application
 description: serve compilation results through a wai application
 license: "BSD3"
 
+ghc-options:
+  "-Wall -fno-warn-name-shadowing"
+
 dependencies:
   - base == 4.*
   - string-conversions
@@ -18,8 +21,10 @@ dependencies:
   - http-types
   - filepath
   - temporary
-  - directory
+  - directory >= 1.2.3.0
   - interpolate
+  - shake
+  - case-insensitive
 
 library:
   source-dirs:

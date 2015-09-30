@@ -33,9 +33,10 @@ instance HasDatatypeInfo Options
 instance HasArguments Options
 
 run :: Options -> IO ()
-run o@Options{..} = withSystemTempDirectory "serve-ghcjs" $ \ tmpDir -> do
+run Options{..} = withSystemTempDirectory "serve-ghcjs" $ \ tmpDir -> do
   let settings =
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  runSettings settings $ serveGhcjs mainIs sourceDirs tmpDir
+  app <- serveGhcjs (BuildConfig mainIs sourceDirs tmpDir)
+  runSettings settings app

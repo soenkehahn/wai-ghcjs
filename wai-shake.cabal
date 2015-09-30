@@ -17,6 +17,7 @@ cabal-version:  >= 1.10
 library
   hs-source-dirs:
       src
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
     , string-conversions
@@ -28,8 +29,10 @@ library
     , http-types
     , filepath
     , temporary
-    , directory
+    , directory >= 1.2.3.0
     , interpolate
+    , shake
+    , case-insensitive
   exposed-modules:
       Network.Wai.Shake.Ghcjs
   default-language: Haskell2010
@@ -39,6 +42,7 @@ executable serve-ghcjs
   hs-source-dirs:
       drivers
     , src
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
     , string-conversions
@@ -50,8 +54,10 @@ executable serve-ghcjs
     , http-types
     , filepath
     , temporary
-    , directory
+    , directory >= 1.2.3.0
     , interpolate
+    , shake
+    , case-insensitive
     , warp
     , getopt-generics == 0.11.*
   other-modules:
@@ -64,6 +70,7 @@ test-suite spec
   hs-source-dirs:
       test
     , src
+  ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
     , string-conversions
@@ -75,8 +82,10 @@ test-suite spec
     , http-types
     , filepath
     , temporary
-    , directory
+    , directory >= 1.2.3.0
     , interpolate
+    , shake
+    , case-insensitive
     , hspec
     , mockery
     , hspec-wai
