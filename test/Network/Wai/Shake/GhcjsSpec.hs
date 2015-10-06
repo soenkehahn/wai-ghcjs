@@ -119,30 +119,28 @@ spec = do
           liftIO $ c `shouldNotContain` "outputErrors.js"
 
     context "when used with invalid haskell files" $ do
-      it "serves the normal index.html" $ do
-        inTempDirectory $ do
-          writeFile "Main.hs" $ unindent [i|
+      let writeInvalidMain = writeFile "Main.hs" $ unindent [i|
             main = putStrLn True
           |]
+          err = "Couldn't match type ‘Bool’ with ‘[Char]’"
+      it "outputs compiler errors to the javascript console" $ do
+        inTempDirectory $ do
+          writeInvalidMain
+          app <- serveGhcjs config
+          flip runWaiSession app $ do
+            indexHtml :: String <- cs <$> simpleBody <$> get "/"
+            liftIO $ indexHtml `shouldContain`
+              "<script language=\"javascript\" src=\"outputErrors.js\" defer></script>"
+            output <- getAndExecuteJs "outputErrors.js"
+            liftIO $ output `shouldContain` err
+
+      it "serves an index.html containing the error" $ do
+        inTempDirectory $ do
+          writeInvalidMain
           app <- serveGhcjs config
           flip runWaiSession app $ do
             output :: String <- cs <$> simpleBody <$> get "/"
-            liftIO $ output `shouldContain`
-              "<script language=\"javascript\" src=\"outputErrors.js\" defer></script>"
-
-      it "outputs compiler errors to the javascript console" $ do
-        inTempDirectory $ do
-          writeFile "Main.hs" $ unindent [i|
-            main = putStrLn True
-          |]
-          app <- serveGhcjs config
-          flip runWaiSession app $ do
-            indexHtml <- cs <$> simpleBody <$> get "/"
-            let errorJsFile = "outputErrors.js"
-            liftIO $ indexHtml `shouldContain` errorJsFile
-            output <- getAndExecuteJs errorJsFile
-            liftIO $ output `shouldContain`
-              "Couldn't match type ‘Bool’ with ‘[Char]’"
+            liftIO $ output `shouldContain` err
 
   describe "createJsToConsole" $ do
     it "creates a js file that outputs the given string" $ do

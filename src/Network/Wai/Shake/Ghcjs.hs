@@ -92,6 +92,9 @@ createErrorPage dir msg = do
       <head>
       </head>
       <body>
+        <pre>
+          #{msg}
+        </pre>
       </body>
       <script language="javascript" src="outputErrors.js" defer></script>
     </html>
