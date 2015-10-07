@@ -73,7 +73,7 @@ ghcjsOrErrorToConsole mvar BuildConfig{mainFile, sourceDirs, buildDir} = do
     indexFile %> \ outFile -> do
       need [mainFile]
       unit $ cmd "rm -f" outFile
-      (Exit c, Stderr output) <- cmd "ghcjs -O0" mainFile "-o" outPattern
+      (Exit c, Stderr output) <- cmd "cabal exec -- ghcjs -O0" mainFile "-o" outPattern
         (map ("-i" ++) sourceDirs)
         ("-outputdir=" ++ buildDir </> "output")
       when (c /= ExitSuccess) $ do
