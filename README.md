@@ -37,3 +37,6 @@ This is an experimental project and has lots of room for improvement.
   typescript, minifying, etc.)
 - `wai-shake` could have a production mode, where it performs the build steps at
   application startup once.
+- travis could execute the test-suite. (Currently the test-suite depends on
+  `ghcjs` in the `$PATH`, but that takes very long to install. Don't have a good
+  idea how to deal with this.)
