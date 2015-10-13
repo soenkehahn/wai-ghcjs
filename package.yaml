@@ -2,7 +2,7 @@ name: wai-shake
 version: "0.1"
 category: Web
 author: Linh Nguyen, Sönke Hahn
-maintainer: linh.nguyen@zalora.com, soenke.hahn@zalora.com
+maintainer: linh.nguyen@zalora.com, soenkehahn@gmail.com
 synopsis: serve compilation results through a wai application
 description: serve compilation results through a wai application
 license: "BSD3"
