@@ -1,12 +1,11 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
-import qualified GHC.Generics
 import           Network.Wai.Handler.Warp hiding (run)
 import           System.IO
-import           System.IO.Temp
 import           WithCli
 
 import           Network.Wai.Shake.Ghcjs
@@ -26,17 +25,13 @@ data Options
     mainIs :: String,
     sourceDirs :: [FilePath]
   }
-  deriving (Show, GHC.Generics.Generic)
-
-instance Generic Options
-instance HasDatatypeInfo Options
-instance HasArguments Options
+  deriving (Show, Generic, HasArguments)
 
 run :: Options -> IO ()
-run Options{..} = withSystemTempDirectory "serve-ghcjs" $ \ tmpDir -> do
+run Options{..} = do
   let settings =
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  app <- serveGhcjs (BuildConfig mainIs sourceDirs tmpDir)
+  app <- serveGhcjs (BuildConfig mainIs sourceDirs "." Cabal)
   runSettings settings app

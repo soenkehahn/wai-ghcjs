@@ -11,9 +11,11 @@ import           Data.Char
 import           Data.String.Conversions
 import           Data.String.Interpolate
 import           Data.String.Interpolate.Util
+import           Development.Shake
 import           Network.Wai.Test
+import           System.Directory
+import           System.IO
 import           System.IO.Silently
-import           System.IO.Temp
 import           System.Process
 import           Test.Hspec
 import           Test.Hspec.Wai hiding (pending)
@@ -25,12 +27,31 @@ import           Network.Wai.Shake.Ghcjs
 
 spec :: Spec
 spec = do
+  runIO $ do
+    hPutStrLn stderr "looking for ghcjs"
+    callCommand "ghcjs --version"
+    hPutStrLn stderr "found"
+
+  describe "findMainFile" $ do
+    it "finds modules" $ do
+      inTempDirectory $ do
+        let moduleFile = "project/src/Main.hs"
+        touch moduleFile
+        absoluteModuleFile <- canonicalizePath moduleFile
+        let config = BuildConfig {
+              mainFile = "Main.hs",
+              sourceDirs = ["src"],
+              projectDir = "./project",
+              projectExec = Vanilla
+            }
+        findMainFile config `shouldReturn` absoluteModuleFile
+
   describe "serveGhcjs" $ do
     let mkCode :: String -> String
         mkCode msg = [i|
           main = putStrLn "#{msg}"
         |]
-        config = BuildConfig "Main.hs" [] "build"
+        config = BuildConfig "Main.hs" [] "." Vanilla
     it "serves html on /" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
@@ -93,16 +114,15 @@ spec = do
           liftIO (output `shouldBe` "foo\n")
 
     it "puts all compilation results in the given build dir" $ do
-      withSystemTempDirectory "wai-shake" $ \ tmpDir -> do
-        inTempDirectory $ do
-          writeFile "Main.hs" $ mkCode "foo"
-          app <- serveGhcjs config{buildDir = tmpDir}
-          flip runWaiSession app $ do
-            let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
-            before <- listFiles
-            _ <- get "/"
-            after <- listFiles
-            liftIO $ after `shouldMatchList` before
+      inTempDirectory $ do
+        writeFile "Main.hs" $ mkCode "foo"
+        app <- serveGhcjs config
+        flip runWaiSession app $ do
+          let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
+          before <- listFiles
+          _ <- get "/"
+          after <- listFiles
+          liftIO $ after `shouldMatchList` before
 
     it "overwrites index.html" $ do
       inTempDirectory $ do

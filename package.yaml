@@ -21,7 +21,7 @@ dependencies:
   - http-types
   - filepath
   - temporary
-  - directory >= 1.2.3.0
+  - directory == 1.2.*
   - interpolate
   - shake
   - case-insensitive
@@ -38,7 +38,7 @@ executables:
       - src
     dependencies:
       - warp
-      - getopt-generics == 0.11.*
+      - getopt-generics == 0.12.*
 
 tests:
   spec:
