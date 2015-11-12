@@ -16,7 +16,6 @@ module Network.Wai.Shake.Ghcjs (
  ) where
 
 import           Control.Concurrent
-import           Control.Exception
 import           Control.Monad
 import qualified Data.ByteString.Lazy as LBS
 import           Data.CaseInsensitive (mk)
@@ -93,20 +92,22 @@ serveGhcjs config = [| \ env -> case env of
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp config = do
   embeddable <- runIO $ wrapWithMessages $ do
-    withSystemTempDirectory "wai-shake" $ \ buildDir -> do
-      (result, outDir) <- ghcjsOrErrorToConsole buildDir config
-      case result of
-        Failure err -> do
-          hPutStrLn stderr err
-          die "ghcjs failed"
-        Success -> mkSettingsFromDir outDir
+    let buildDir = "wai-shake-builds"
+    (result, outDir) <- ghcjsOrErrorToConsole buildDir config
+    case result of
+      Failure err -> do
+        callCommand ("rm -rf " ++ buildDir)
+        hPutStrLn stderr err
+        die "ghcjs failed"
+      Success -> mkSettingsFromDir outDir
   [|return $ staticApp $(mkSettings (return embeddable))|]
   where
     wrapWithMessages :: IO a -> IO a
-    wrapWithMessages action = bracket
-      (hPutStrLn stderr "=====> building client code with ghcjs")
-      (const $ hPutStrLn stderr "=====> done")
-      (const action)
+    wrapWithMessages action = do
+      hPutStrLn stderr "=====> building client code with ghcjs"
+      result <- action
+      hPutStrLn stderr "=====> done"
+      return result
 
 -- * development app
 
@@ -121,7 +122,6 @@ mkSimpleApp app request respond = app request >>= respond
 
 developmentApp :: MVar () -> FilePath -> BuildConfig -> Application
 developmentApp mvar buildDir config = mkSimpleApp $ \ request -> do
-  createDirectoryIfMissing True buildDir
   outDir <- snd <$> forceToSingleThread mvar
     (ghcjsOrErrorToConsole buildDir config)
   case pathInfo request of
@@ -154,7 +154,9 @@ data Result
   deriving (Eq, Show)
 
 ghcjsOrErrorToConsole :: FilePath -> BuildConfig -> IO (Result, FilePath)
-ghcjsOrErrorToConsole buildDir config = do
+ghcjsOrErrorToConsole buildDir_ config = do
+  createDirectoryIfMissing True buildDir_
+  buildDir <- canonicalizePath buildDir_
   let outPattern = buildDir </> takeBaseName (mainFile config)
       outDir = outPattern <.> "jsexe"
       indexFile = outDir </> "index.html"
