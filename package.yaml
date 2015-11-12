@@ -24,7 +24,13 @@ dependencies:
   - directory == 1.2.*
   - interpolate
   - shake
+  - wai-app-static
   - case-insensitive
+  - text
+  - template-haskell
+  - th-lift
+  - cryptohash
+  - base64-bytestring
 
 library:
   source-dirs:
@@ -53,3 +59,4 @@ tests:
       - silently
       - QuickCheck
       - wai-extra
+      - zlib

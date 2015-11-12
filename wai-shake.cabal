@@ -32,9 +32,16 @@ library
     , directory == 1.2.*
     , interpolate
     , shake
+    , wai-app-static
     , case-insensitive
+    , text
+    , template-haskell
+    , th-lift
+    , cryptohash
+    , base64-bytestring
   exposed-modules:
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Embedded
   default-language: Haskell2010
 
 executable serve-ghcjs
@@ -57,11 +64,18 @@ executable serve-ghcjs
     , directory == 1.2.*
     , interpolate
     , shake
+    , wai-app-static
     , case-insensitive
+    , text
+    , template-haskell
+    , th-lift
+    , cryptohash
+    , base64-bytestring
     , warp
     , getopt-generics == 0.12.*
   other-modules:
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Embedded
   default-language: Haskell2010
 
 test-suite spec
@@ -85,14 +99,22 @@ test-suite spec
     , directory == 1.2.*
     , interpolate
     , shake
+    , wai-app-static
     , case-insensitive
+    , text
+    , template-haskell
+    , th-lift
+    , cryptohash
+    , base64-bytestring
     , hspec
     , mockery
     , hspec-wai
     , silently
     , QuickCheck
     , wai-extra
+    , zlib
   other-modules:
       Network.Wai.Shake.GhcjsSpec
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Embedded
   default-language: Haskell2010

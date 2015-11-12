@@ -33,5 +33,5 @@ run Options{..} = do
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  app <- serveGhcjs (BuildConfig mainIs sourceDirs "." Cabal)
+  app <- mkDevelopmentApp (BuildConfig mainIs sourceDirs "." Cabal)
   runSettings settings app

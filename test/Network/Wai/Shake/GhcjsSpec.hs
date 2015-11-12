@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Network.Wai.Shake.GhcjsSpec where
 
+import           Codec.Compression.GZip (decompress)
 import           Control.Monad
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Char
@@ -46,7 +48,7 @@ spec = do
             }
         findMainFile config `shouldReturn` absoluteModuleFile
 
-  describe "serveGhcjs" $ do
+  describe "mkDevelopmentApp" $ do
     let mkCode :: String -> String
         mkCode msg = [i|
           main = putStrLn "#{msg}"
@@ -55,7 +57,7 @@ spec = do
     it "serves html on /" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           get "/" `shouldRespondWith` 200 {
             matchHeaders = ["Content-Type" <:> "text/html; charset=utf-8"]
@@ -64,7 +66,7 @@ spec = do
     it "serves the generated index.html on /" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           output :: String <- cs <$> simpleBody <$> get "/"
           liftIO $ output `shouldContain`
@@ -73,7 +75,7 @@ spec = do
     it "serves javascript" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           forM_ ["all.js", "rts.js", "lib.js", "out.js", "runmain.js"] $ \ file -> do
             get ("/" <> file) `shouldRespondWith` 200 {
@@ -83,7 +85,7 @@ spec = do
     it "compiles haskell files to javascript" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "foo\n")
@@ -91,7 +93,7 @@ spec = do
     it "recompiles changed haskell sources" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           _ <- getAndExecuteJs "all.js"
           liftIO $ writeFile "Main.hs" $ mkCode "bar"
@@ -108,7 +110,7 @@ spec = do
           import Lib
           main = putStrLn text
         |]
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           output <- getAndExecuteJs "all.js"
           liftIO (output `shouldBe` "foo\n")
@@ -116,7 +118,7 @@ spec = do
     it "puts all compilation results in the given build dir" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
           before <- listFiles
@@ -129,7 +131,7 @@ spec = do
         writeFile "Main.hs" $ unindent [i|
           main = putStrLn True
         |]
-        app <- serveGhcjs config
+        app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           _ <- get "/"
           liftIO $ writeFile "Main.hs" $ unindent [i|
@@ -146,7 +148,7 @@ spec = do
       it "outputs compiler errors to the javascript console" $ do
         inTempDirectory $ do
           writeInvalidMain
-          app <- serveGhcjs config
+          app <- mkDevelopmentApp config
           flip runWaiSession app $ do
             indexHtml :: String <- cs <$> simpleBody <$> get "/"
             liftIO $ indexHtml `shouldContain`
@@ -157,10 +159,22 @@ spec = do
       it "serves an index.html containing the error" $ do
         inTempDirectory $ do
           writeInvalidMain
-          app <- serveGhcjs config
+          app <- mkDevelopmentApp config
           flip runWaiSession app $ do
             output :: String <- cs <$> simpleBody <$> get "/"
             liftIO $ output `shouldContain` err
+
+  describe "serveGhcjs" $ do
+    context "Production" $ do
+      it "serves the generated index.html on /" $ do
+        app <- $(serveGhcjs
+          (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla))
+          Production
+        flip runWaiSession app $ do
+          output :: String <- cs <$> decompress <$> simpleBody <$>
+            get "/index.html" -- fixme
+          liftIO $ output `shouldContain`
+            "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
   describe "createJsToConsole" $ do
     it "creates a js file that outputs the given string" $ do
