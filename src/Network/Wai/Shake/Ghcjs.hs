@@ -40,6 +40,7 @@ import           System.IO
 import           System.IO.Temp
 import           System.Process
 import           WaiAppStatic.Storage.Embedded
+import           WaiAppStatic.Types
 
 import           Network.Wai.Shake.Ghcjs.Embedded
 
@@ -100,7 +101,10 @@ mkProductionApp config = do
         hPutStrLn stderr err
         die "ghcjs failed"
       Success -> mkSettingsFromDir outDir
-  [|return $ staticApp $(mkSettings (return embeddable))|]
+  [|return $ staticApp
+    ($(mkSettings (return embeddable))){
+      ssIndices = [unsafeToPiece "index.html"]
+    }|]
   where
     wrapWithMessages :: IO a -> IO a
     wrapWithMessages action = do

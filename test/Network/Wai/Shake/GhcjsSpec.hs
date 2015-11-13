@@ -171,8 +171,7 @@ spec = do
           (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla))
           Production
         flip runWaiSession app $ do
-          output :: String <- cs <$> decompress <$> simpleBody <$>
-            get "/index.html" -- fixme
+          output :: String <- cs <$> decompress <$> simpleBody <$> get "/"
           liftIO $ output `shouldContain`
             "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 

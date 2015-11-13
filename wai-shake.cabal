@@ -32,7 +32,7 @@ library
     , directory == 1.2.*
     , interpolate
     , shake
-    , wai-app-static
+    , wai-app-static >= 3.1.2
     , case-insensitive
     , text
     , template-haskell
@@ -64,7 +64,7 @@ executable serve-ghcjs
     , directory == 1.2.*
     , interpolate
     , shake
-    , wai-app-static
+    , wai-app-static >= 3.1.2
     , case-insensitive
     , text
     , template-haskell
@@ -99,7 +99,7 @@ test-suite spec
     , directory == 1.2.*
     , interpolate
     , shake
-    , wai-app-static
+    , wai-app-static >= 3.1.2
     , case-insensitive
     , text
     , template-haskell

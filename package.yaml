@@ -24,7 +24,7 @@ dependencies:
   - directory == 1.2.*
   - interpolate
   - shake
-  - wai-app-static
+  - wai-app-static >= 3.1.2
   - case-insensitive
   - text
   - template-haskell
