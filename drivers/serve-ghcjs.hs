@@ -6,6 +6,7 @@ module Main where
 
 import           Network.Wai.Handler.Warp hiding (run)
 import           System.IO
+import           System.IO.Temp
 import           WithCli
 
 import           Network.Wai.Shake.Ghcjs
@@ -33,5 +34,6 @@ run Options{..} = do
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  app <- mkDevelopmentApp (BuildConfig mainIs sourceDirs "." Cabal)
-  runSettings settings app
+  withSystemTempDirectory "wai-shake" $ \ buildDir -> do
+    app <- mkDevelopmentApp (BuildConfig mainIs sourceDirs "." Cabal buildDir)
+    runSettings settings app

@@ -18,6 +18,7 @@ import           Network.Wai.Test
 import           System.Directory
 import           System.IO
 import           System.IO.Silently
+import           System.IO.Temp
 import           System.Process
 import           Test.Hspec
 import           Test.Hspec.Wai hiding (pending)
@@ -44,7 +45,8 @@ spec = do
               mainFile = "Main.hs",
               sourceDirs = ["src"],
               projectDir = "./project",
-              projectExec = Vanilla
+              projectExec = Vanilla,
+              buildDir = error "unused"
             }
         findMainFile config `shouldReturn` absoluteModuleFile
 
@@ -53,7 +55,7 @@ spec = do
         mkCode msg = [i|
           main = putStrLn "#{msg}"
         |]
-        config = BuildConfig "Main.hs" [] "." Vanilla
+        config = BuildConfig "Main.hs" [] "." Vanilla "tmp-build"
     it "serves html on /" $ do
       inTempDirectory $ do
         writeFile "Main.hs" $ mkCode "foo"
@@ -117,14 +119,15 @@ spec = do
 
     it "puts all compilation results in the given build dir" $ do
       inTempDirectory $ do
-        writeFile "Main.hs" $ mkCode "foo"
-        app <- mkDevelopmentApp config
-        flip runWaiSession app $ do
-          let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
-          before <- listFiles
-          _ <- get "/"
-          after <- listFiles
-          liftIO $ after `shouldMatchList` before
+        withSystemTempDirectory "wai-shake-test" $ \ buildDir -> do
+          writeFile "Main.hs" $ mkCode "foo"
+          app <- mkDevelopmentApp config{ buildDir = buildDir }
+          flip runWaiSession app $ do
+            let listFiles = words <$> (liftIO $ capture_ $ callCommand "find")
+            before <- listFiles
+            _ <- get "/"
+            after <- listFiles
+            liftIO $ after `shouldMatchList` before
 
     it "overwrites index.html" $ do
       inTempDirectory $ do
@@ -168,7 +171,8 @@ spec = do
     context "Production" $ do
       it "serves the generated index.html on /" $ do
         app <- $(serveGhcjs
-          (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla))
+          (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla
+            "wai-shake-builds"))
           Production
         flip runWaiSession app $ do
           output :: String <- cs <$> decompress <$> simpleBody <$> get "/"

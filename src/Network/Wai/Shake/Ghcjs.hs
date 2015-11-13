@@ -37,7 +37,6 @@ import           System.Environment
 import           System.Exit
 import           System.FilePath
 import           System.IO
-import           System.IO.Temp
 import           System.Process
 import           WaiAppStatic.Storage.Embedded
 import           WaiAppStatic.Types
@@ -49,11 +48,12 @@ data BuildConfig = BuildConfig {
 , sourceDirs :: [FilePath]
 , projectDir :: FilePath
 , projectExec :: Exec
+, buildDir :: FilePath
 } deriving (Eq, Show)
 
 instance Lift BuildConfig where
   lift = \ case
-    BuildConfig a b c d -> [|BuildConfig a b c d|]
+    BuildConfig a b c d e -> [|BuildConfig a b c d e|]
 
 getSourceDirs :: BuildConfig -> [FilePath]
 getSourceDirs config = case sourceDirs config of
@@ -93,11 +93,10 @@ serveGhcjs config = [| \ env -> case env of
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp config = do
   embeddable <- runIO $ wrapWithMessages $ do
-    let buildDir = "wai-shake-builds"
-    (result, outDir) <- ghcjsOrErrorToConsole buildDir config
+    (result, outDir) <- ghcjsOrErrorToConsole config
     case result of
       Failure err -> do
-        callCommand ("rm -rf " ++ buildDir)
+        callCommand ("rm -rf " ++ buildDir config)
         hPutStrLn stderr err
         die "ghcjs failed"
       Success -> mkSettingsFromDir outDir
@@ -118,16 +117,15 @@ mkProductionApp config = do
 mkDevelopmentApp :: BuildConfig -> IO Application
 mkDevelopmentApp config = do
   mvar <- newMVar ()
-  withSystemTempDirectory "wai-shake" $ \ buildDir -> do
-    return $ developmentApp mvar buildDir config
+  return $ developmentApp mvar config
 
 mkSimpleApp :: (Request -> IO Response) -> Application
 mkSimpleApp app request respond = app request >>= respond
 
-developmentApp :: MVar () -> FilePath -> BuildConfig -> Application
-developmentApp mvar buildDir config = mkSimpleApp $ \ request -> do
+developmentApp :: MVar () -> BuildConfig -> Application
+developmentApp mvar config = mkSimpleApp $ \ request -> do
   outDir <- snd <$> forceToSingleThread mvar
-    (ghcjsOrErrorToConsole buildDir config)
+    (ghcjsOrErrorToConsole config)
   case pathInfo request of
     [] -> serveFile "text/html" (outDir </> "index" <.> "html")
     [file] | ".js" == takeExtension (cs file) -> do
@@ -157,15 +155,15 @@ data Result
   | Failure String
   deriving (Eq, Show)
 
-ghcjsOrErrorToConsole :: FilePath -> BuildConfig -> IO (Result, FilePath)
-ghcjsOrErrorToConsole buildDir_ config = do
-  createDirectoryIfMissing True buildDir_
-  buildDir <- canonicalizePath buildDir_
-  let outPattern = buildDir </> takeBaseName (mainFile config)
+ghcjsOrErrorToConsole :: BuildConfig -> IO (Result, FilePath)
+ghcjsOrErrorToConsole config = do
+  createDirectoryIfMissing True (buildDir config)
+  absBuildDir <- canonicalizePath (buildDir config)
+  let outPattern = absBuildDir </> takeBaseName (mainFile config)
       outDir = outPattern <.> "jsexe"
       indexFile = outDir </> "index.html"
       options = shakeOptions{
-        shakeFiles = buildDir </> "shake"
+        shakeFiles = absBuildDir </> "shake"
       }
   resultMVar <- newMVar Success
   withArgs [] $ shakeArgs options $ do
@@ -179,7 +177,7 @@ ghcjsOrErrorToConsole buildDir_ config = do
         (addExec (projectExec config) "ghcjs -O0") (mainFile config)
         "-o" outPattern
         (map ("-i" ++) (sourceDirs config))
-        ("-outputdir=" ++ buildDir </> "output")
+        ("-outputdir=" ++ absBuildDir </> "output")
       liftIO $ when (c /= ExitSuccess) $ do
         writeMVar resultMVar (Failure output)
         createErrorPage outDir output
