@@ -14,12 +14,19 @@ import           System.Directory as System
 import           System.Exit
 import           System.FilePath
 
+-- | Specifies how to build the client application.
 data BuildConfig = BuildConfig {
   mainFile :: FilePath
+    -- ^ location of the main module
 , sourceDirs :: [FilePath]
+    -- ^ where to look for Haskell source files
 , projectDir :: FilePath
+    -- ^ where the client application resides. Both 'mainFile' and
+    -- 'sourceDirs' are interpreted relative to 'projectDir'.
 , projectExec :: Exec
+    -- ^ which ghcjs package databases to use (see 'Exec')
 , buildDir :: FilePath
+    -- ^ where to store build results
 } deriving (Eq, Show)
 
 instance Lift BuildConfig where
@@ -31,10 +38,16 @@ getSourceDirs config = case sourceDirs config of
   [] -> ["."]
   dirs -> dirs
 
+-- | In case your client application needs dependencies that are
+-- installed in a @cabal@ sandbox or through @stack@ you can specify
+-- that with 'Exec'.
 data Exec
   = Vanilla
+    -- ^ no additional package databases are needed
   | Cabal
+    -- ^ execute build commands prefixed with @cabal exec --@
   | Stack
+    -- ^ execute build commands prefixed with @stack exec --@
   deriving (Eq, Show)
 
 instance Lift Exec where

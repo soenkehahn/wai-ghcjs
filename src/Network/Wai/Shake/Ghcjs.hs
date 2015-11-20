@@ -4,12 +4,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Network.Wai.Shake.Ghcjs (
+  mkDevelopmentApp,
   BuildConfig(..),
   Exec(..),
-  Environment(..),
-  serveGhcjs,
-  mkDevelopmentApp,
+
   mkProductionApp,
+
+  serveGhcjs,
+  Environment(..),
  ) where
 
 import           Control.Concurrent
@@ -37,37 +39,23 @@ import           WaiAppStatic.Types
 import           Network.Wai.Shake.Ghcjs.Embedded
 import           Network.Wai.Shake.Ghcjs.Internal
 
-serveGhcjs :: BuildConfig -> Q Exp
-serveGhcjs config = [| \ env -> case env of
-  Development -> mkDevelopmentApp config
-  Production -> $(mkProductionApp config)|]
-
--- * production app
-
-mkProductionApp :: BuildConfig -> Q Exp
-mkProductionApp config = do
-  embeddable <- runIO $ wrapWithMessages $ do
-    (result, outDir) <- ghcjsOrErrorToConsole config
-    case result of
-      Failure err -> do
-        callCommand ("rm -rf " ++ buildDir config)
-        hPutStrLn stderr err
-        die "ghcjs failed"
-      Success -> mkSettingsFromDir outDir
-  [|return $ staticApp
-    ($(mkSettings (return embeddable))){
-      ssIndices = [unsafeToPiece "index.html"]
-    }|]
-  where
-    wrapWithMessages :: IO a -> IO a
-    wrapWithMessages action = do
-      hPutStrLn stderr "=====> building client code with ghcjs"
-      result <- action
-      hPutStrLn stderr "=====> done"
-      return result
-
 -- * development app
 
+-- | Creates a wai 'Application' that serves a ghcjs executable (the client
+-- application). Where to find
+-- the executable and how to compile it is specified in the given 'BuildConfig'.
+-- The 'Application' serves the created @index.html@ under both @/@ and
+-- @/index.html@. All the needed javascript files that are referenced from the
+-- @index.html@ are also served.
+--
+-- 'mkDevelopmentApp' compiles the Haskell sources on the fly. It will also
+-- recompile them when they have changed on disk. In addition in case of compile
+-- errors it will deliver an html page that contains the error messages.
+--
+-- This allows a workflow similar to those known from dynamic web programming
+-- languages: You edit your code, save the file, switch to a browser and hit
+-- reload. You will either see compilation errors in the browser or you will
+-- get the newly compiled web application.
 mkDevelopmentApp :: BuildConfig -> IO Application
 mkDevelopmentApp config = do
   mvar <- newMVar ()
@@ -103,6 +91,51 @@ forceToSingleThread :: MVar () -> IO a -> IO a
 forceToSingleThread mvar action = modifyMVar mvar $ \ () -> do
   a <- action
   return ((), a)
+
+-- * production app
+
+-- | 'mkProductionApp' is similar to 'mkDevelopmentApp' but it is meant for
+-- use when you're not developing. It compiles the client application during
+-- compilation of the server 'Application' using @TemplateHaskell@. It doesn't
+-- recompile any files on changes. In addition it embeds the compilation results
+-- into the executable, so it is completely self-contained. (I.e. you can scp
+-- the executable to another server and it will be able to deliver the complete
+-- client application.)
+--
+-- The spliced in fragment has type
+--
+-- @'IO' 'Application'@
+--
+-- >>> :set -XTemplateHaskell
+-- >>> :type $(mkProductionApp (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- =====> building client code with ghcjs
+-- ...
+-- =====> done
+-- $(mkProductionApp (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+--   :: IO Application
+mkProductionApp :: BuildConfig -> Q Exp
+mkProductionApp config = do
+  embeddable <- runIO $ wrapWithMessages $ do
+    (result, outDir) <- ghcjsOrErrorToConsole config
+    case result of
+      Failure err -> do
+        callCommand ("rm -rf " ++ buildDir config)
+        hPutStrLn stderr err
+        die "ghcjs failed"
+      Success -> mkSettingsFromDir outDir
+  [|do
+      (return () :: IO ())
+      return $ staticApp
+        ($(mkSettings (return embeddable))){
+          ssIndices = [unsafeToPiece (cs ("index.html" :: String))]
+        }|]
+  where
+    wrapWithMessages :: IO a -> IO a
+    wrapWithMessages action = do
+      hPutStrLn stderr "=====> building client code with ghcjs"
+      result <- action
+      hPutStrLn stderr "=====> done"
+      return result
 
 -- * ghcjs
 
@@ -162,3 +195,40 @@ createErrorPage dir msg = do
 
 writeMVar :: MVar a -> a -> IO ()
 writeMVar mvar a = modifyMVar_ mvar (const $ return a)
+
+-- * serveGhcjs
+
+-- | 'serveGhcjs' combines 'mkDevelopmentApp' and 'mkProductionApp'. It will
+-- compile the client application during compilation of the server code. The
+-- spliced in fragment has type
+--
+-- @'Environment' -> 'IO' 'Application'@
+--
+-- This
+-- means that you can at runtime pass in an 'Environment' and either get the
+-- behavior of 'mkProductionApp' or the one of 'mkDevelopmentApp', including
+-- recompilation.
+--
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- =====> building client code with ghcjs
+-- ...
+-- =====> done
+-- $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+--   :: Environment -> IO Application
+--
+-- So the 'BuildConfig' argument has to be supplied inside the @TemplateHaskell@
+-- brackets while the 'Environment' argument has to be outside:
+--
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
+-- =====> building client code with ghcjs
+-- ...
+-- =====> done
+-- $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
+--   :: IO Application
+--
+-- This way you can decide at runtime (e.g. depending on a command line flag)
+-- whether to run in 'Development' or 'Production' mode.
+serveGhcjs :: BuildConfig -> Q Exp
+serveGhcjs config = [| \ env -> case env of
+  Development -> mkDevelopmentApp config
+  Production -> $(mkProductionApp config)|]

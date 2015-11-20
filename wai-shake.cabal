@@ -20,25 +20,25 @@ library
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
-    , string-conversions
-    , language-ecmascript
-    , bytestring
-    , wai
-    , process
-    , data-default
-    , http-types
-    , filepath
-    , temporary
-    , directory == 1.2.*
-    , interpolate
-    , shake
-    , wai-app-static >= 3.1.2
-    , case-insensitive
-    , text
-    , template-haskell
-    , th-lift
-    , cryptohash
     , base64-bytestring
+    , bytestring
+    , case-insensitive
+    , cryptohash
+    , data-default
+    , directory == 1.2.*
+    , filepath
+    , http-types
+    , interpolate
+    , language-ecmascript
+    , process
+    , shake
+    , string-conversions
+    , template-haskell
+    , temporary
+    , text
+    , th-lift
+    , wai
+    , wai-app-static >= 3.1.2
   exposed-modules:
       Network.Wai.Shake.Ghcjs
       Network.Wai.Shake.Ghcjs.Embedded
@@ -53,25 +53,25 @@ executable serve-ghcjs
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
-    , string-conversions
-    , language-ecmascript
-    , bytestring
-    , wai
-    , process
-    , data-default
-    , http-types
-    , filepath
-    , temporary
-    , directory == 1.2.*
-    , interpolate
-    , shake
-    , wai-app-static >= 3.1.2
-    , case-insensitive
-    , text
-    , template-haskell
-    , th-lift
-    , cryptohash
     , base64-bytestring
+    , bytestring
+    , case-insensitive
+    , cryptohash
+    , data-default
+    , directory == 1.2.*
+    , filepath
+    , http-types
+    , interpolate
+    , language-ecmascript
+    , process
+    , shake
+    , string-conversions
+    , template-haskell
+    , temporary
+    , text
+    , th-lift
+    , wai
+    , wai-app-static >= 3.1.2
     , warp
     , getopt-generics == 0.12.*
   other-modules:
@@ -89,33 +89,35 @@ test-suite spec
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
-    , string-conversions
-    , language-ecmascript
-    , bytestring
-    , wai
-    , process
-    , data-default
-    , http-types
-    , filepath
-    , temporary
-    , directory == 1.2.*
-    , interpolate
-    , shake
-    , wai-app-static >= 3.1.2
-    , case-insensitive
-    , text
-    , template-haskell
-    , th-lift
-    , cryptohash
     , base64-bytestring
+    , bytestring
+    , case-insensitive
+    , cryptohash
+    , data-default
+    , directory == 1.2.*
+    , filepath
+    , http-types
+    , interpolate
+    , language-ecmascript
+    , process
+    , shake
+    , string-conversions
+    , template-haskell
+    , temporary
+    , text
+    , th-lift
+    , wai
+    , wai-app-static >= 3.1.2
+    , doctest
     , hspec
-    , mockery
     , hspec-wai
-    , silently
+    , mockery
     , QuickCheck
+    , silently
     , wai-extra
     , zlib
   other-modules:
+      DocTestSpec
       Network.Wai.Shake.GhcjsSpec
       Network.Wai.Shake.Ghcjs
       Network.Wai.Shake.Ghcjs.Embedded

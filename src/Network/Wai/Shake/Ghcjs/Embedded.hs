@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 
 module Network.Wai.Shake.Ghcjs.Embedded (mkSettingsFromDir) where
 
@@ -24,7 +23,7 @@ mkSettingsFromDir dir = do
 mkEmbeddable :: FilePath -> FilePath -> IO EmbeddableEntry
 mkEmbeddable dir file = do
   contents <- Data.ByteString.Lazy.readFile (dir </> file)
-  let mimetype = case takeExtension file of
+  let mimetype = cs $ case takeExtension file of
         ".html" -> "text/html"
         ".js" -> "application/javascript"
         x -> error ("unknown extension: " ++ x)
