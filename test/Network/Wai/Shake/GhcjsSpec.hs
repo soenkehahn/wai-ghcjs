@@ -66,14 +66,15 @@ spec = do
             matchHeaders = ["Content-Type" <:> "text/html; charset=utf-8"]
           }
 
-    it "serves the generated index.html on /" $ do
-      inTempDirectory $ do
-        writeFile "Main.hs" $ mkCode "foo"
-        app <- mkDevelopmentApp config
-        flip runWaiSession app $ do
-          output :: String <- cs <$> simpleBody <$> get "/"
-          liftIO $ output `shouldContain`
-            "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
+    forM_ ["/", "/index.html"] $ \ path -> do
+      it ("serves the generated index.html on " ++ path) $ do
+        inTempDirectory $ do
+          writeFile "Main.hs" $ mkCode "foo"
+          app <- mkDevelopmentApp config
+          flip runWaiSession app $ do
+            output :: String <- cs <$> simpleBody <$> get (cs path)
+            liftIO $ output `shouldContain`
+              "<script language=\"javascript\" src=\"runmain.js\" defer></script>"
 
     it "serves javascript" $ do
       inTempDirectory $ do

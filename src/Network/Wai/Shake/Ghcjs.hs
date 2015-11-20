@@ -80,8 +80,10 @@ developmentApp :: MVar () -> BuildConfig -> Application
 developmentApp mvar config = mkSimpleApp $ \ request -> do
   outDir <- snd <$> forceToSingleThread mvar
     (ghcjsOrErrorToConsole config)
+  let serveIndex = serveFile "text/html" (outDir </> "index" <.> "html")
   case pathInfo request of
-    [] -> serveFile "text/html" (outDir </> "index" <.> "html")
+    [] -> serveIndex
+    [indexFile] | indexFile == cs "index.html" -> serveIndex
     [file] | ".js" == takeExtension (cs file) -> do
       fileExists <- System.doesFileExist (outDir </> cs file)
       if fileExists
