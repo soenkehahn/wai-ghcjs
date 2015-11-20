@@ -4,15 +4,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Network.Wai.Shake.Ghcjs (
-  serveGhcjs,
   BuildConfig(..),
   Exec(..),
   Environment(..),
+  serveGhcjs,
   mkDevelopmentApp,
-
-  -- exported for testing:
-  createJsToConsole,
-  findMainFile,
+  mkProductionApp,
  ) where
 
 import           Control.Concurrent
@@ -24,11 +21,7 @@ import           Data.String.Conversions
 import           Data.String.Interpolate
 import           Data.String.Interpolate.Util
 import           Development.Shake as Shake
-import           Language.ECMAScript3.PrettyPrint
-import           Language.ECMAScript3.Syntax
-import           Language.ECMAScript3.Syntax.CodeGen
 import           Language.Haskell.TH
-import           Language.Haskell.TH.Lift
 import           Network.HTTP.Types
 import           Network.Wai
 import           Network.Wai.Application.Static
@@ -42,46 +35,7 @@ import           WaiAppStatic.Storage.Embedded
 import           WaiAppStatic.Types
 
 import           Network.Wai.Shake.Ghcjs.Embedded
-
-data BuildConfig = BuildConfig {
-  mainFile :: FilePath
-, sourceDirs :: [FilePath]
-, projectDir :: FilePath
-, projectExec :: Exec
-, buildDir :: FilePath
-} deriving (Eq, Show)
-
-instance Lift BuildConfig where
-  lift = \ case
-    BuildConfig a b c d e -> [|BuildConfig a b c d e|]
-
-getSourceDirs :: BuildConfig -> [FilePath]
-getSourceDirs config = case sourceDirs config of
-  [] -> ["."]
-  dirs -> dirs
-
-data Exec
-  = Vanilla
-  | Cabal
-  | Stack
-  deriving (Eq, Show)
-
-instance Lift Exec where
-  lift = \ case
-    Vanilla -> [|Vanilla|]
-    Cabal -> [|Cabal|]
-    Stack -> [|Stack|]
-
-addExec :: Exec -> String -> String
-addExec exec command = case exec of
-  Vanilla -> command
-  Cabal -> "cabal exec -- " ++ command
-  Stack -> "stack exec -- " ++ command
-
-data Environment
-  = Development
-  | Production
-  deriving (Eq, Show)
+import           Network.Wai.Shake.Ghcjs.Internal
 
 serveGhcjs :: BuildConfig -> Q Exp
 serveGhcjs config = [| \ env -> case env of
@@ -185,20 +139,6 @@ ghcjsOrErrorToConsole config = do
   result <- readMVar resultMVar
   return (result, outDir)
 
-findMainFile :: BuildConfig -> IO FilePath
-findMainFile config =
-  lookup $ map
-    (\ srcDir -> projectDir config </> srcDir </> mainFile config)
-    (getSourceDirs config)
-  where
-    lookup :: [FilePath] -> IO FilePath
-    lookup (a : r) = do
-      exists <- System.doesFileExist a
-      if exists
-        then canonicalizePath a
-        else lookup r
-    lookup [] = die ("cannot find " ++ mainFile config)
-
 createErrorPage :: FilePath -> String -> IO ()
 createErrorPage dir msg = do
   let jsCode = createJsToConsole msg
@@ -217,14 +157,6 @@ createErrorPage dir msg = do
       <script language="javascript" src="outputErrors.js" defer></script>
     </html>
   |]
-
-createJsToConsole :: String -> LBS.ByteString
-createJsToConsole msg =
-  let escape :: String -> String
-      escape s =
-        show $ prettyPrint (string (doublePercentSigns s) :: Expression ())
-      doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
-  in cs $ unlines $ map (\ line -> "console.log(" ++ escape line ++ ");") (lines msg)
 
 writeMVar :: MVar a -> a -> IO ()
 writeMVar mvar a = modifyMVar_ mvar (const $ return a)

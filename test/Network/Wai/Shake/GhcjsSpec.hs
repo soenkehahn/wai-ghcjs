@@ -27,6 +27,7 @@ import           Test.Mockery.Directory
 import           Test.QuickCheck
 
 import           Network.Wai.Shake.Ghcjs
+import           Network.Wai.Shake.Ghcjs.Internal
 
 spec :: Spec
 spec = do
