@@ -18,6 +18,8 @@ import           System.FilePath
 data BuildConfig = BuildConfig {
   mainFile :: FilePath
     -- ^ location of the main module
+, customIndexFile :: Maybe FilePath
+    -- ^ custom @index.html@ file
 , sourceDirs :: [FilePath]
     -- ^ where to look for Haskell source files
 , projectDir :: FilePath
@@ -31,7 +33,7 @@ data BuildConfig = BuildConfig {
 
 instance Lift BuildConfig where
   lift = \ case
-    BuildConfig a b c d e -> [|BuildConfig a b c d e|]
+    BuildConfig a b c d e f -> [|BuildConfig a b c d e f|]
 
 getSourceDirs :: BuildConfig -> [FilePath]
 getSourceDirs config = case sourceDirs config of

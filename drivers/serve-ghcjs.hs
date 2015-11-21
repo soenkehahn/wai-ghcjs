@@ -35,5 +35,5 @@ run Options{..} = do
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
   withSystemTempDirectory "wai-shake" $ \ buildDir -> do
-    app <- mkDevelopmentApp (BuildConfig mainIs sourceDirs "." Cabal buildDir)
+    app <- mkDevelopmentApp (BuildConfig mainIs Nothing sourceDirs "." Cabal buildDir)
     runSettings settings app

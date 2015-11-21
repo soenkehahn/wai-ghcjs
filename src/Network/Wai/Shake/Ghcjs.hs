@@ -104,11 +104,11 @@ forceToSingleThread mvar action = modifyMVar mvar $ \ () -> do
 -- @'IO' 'Application'@
 --
 -- >>> :set -XTemplateHaskell
--- >>> :type $(mkProductionApp (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(mkProductionApp (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
 --   :: IO Application
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp config = do
@@ -164,9 +164,14 @@ ghcjsOrErrorToConsole config = do
         "-o" outPattern
         (map ("-i" ++) (sourceDirs config))
         ("-outputdir=" ++ absBuildDir </> "output")
-      liftIO $ when (c /= ExitSuccess) $ do
-        writeMVar resultMVar (Failure output)
-        createErrorPage outDir output
+      case c of
+        ExitFailure _ -> liftIO $ do
+          writeMVar resultMVar (Failure output)
+          createErrorPage outDir output
+        ExitSuccess -> do
+          forM_ (customIndexFile config) $ \ customFile -> do
+            need [customFile]
+            liftIO (readFile customFile >>= writeFile indexFile)
       return ()
   result <- readMVar resultMVar
   return (result, outDir)
@@ -206,21 +211,21 @@ writeMVar mvar a = modifyMVar_ mvar (const $ return a)
 -- behavior of 'mkProductionApp' or the one of 'mkDevelopmentApp', including
 -- recompilation.
 --
--- >>> :type $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
 --   :: Environment -> IO Application
 --
 -- So the 'BuildConfig' argument has to be supplied inside the @TemplateHaskell@
 -- brackets while the 'Environment' argument has to be outside:
 --
--- >>> :type $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(serveGhcjs (BuildConfig "Main.hs" [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
+-- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds")) Development
 --   :: IO Application
 --
 -- This way you can decide at runtime (e.g. depending on a command line flag)
