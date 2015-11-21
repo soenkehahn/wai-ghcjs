@@ -10,6 +10,9 @@ license: "BSD3"
 ghc-options:
   "-Wall -fno-warn-name-shadowing"
 
+data-files:
+  - test/resources/test-01/Main.hs
+
 dependencies:
   - base == 4.*
   - base64-bytestring

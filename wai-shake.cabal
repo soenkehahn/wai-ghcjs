@@ -14,6 +14,9 @@ license-file:   LICENSE
 build-type:     Simple
 cabal-version:  >= 1.10
 
+data-files:
+    test/resources/test-01/Main.hs
+
 library
   hs-source-dirs:
       src
