@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -11,8 +10,6 @@ import           Control.Monad
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Char
 import           Data.String.Conversions
-import           Data.String.Interpolate
-import           Data.String.Interpolate.Util
 import           Development.Shake
 import           Network.Wai.Test
 import           System.Directory
@@ -53,9 +50,7 @@ spec = do
 
   describe "mkDevelopmentApp" $ do
     let mkCode :: String -> String
-        mkCode msg = [i|
-          main = putStrLn "#{msg}"
-        |]
+        mkCode msg = "main = putStrLn \"" ++ msg ++ "\""
         config = BuildConfig "Main.hs" [] "." Vanilla "tmp-build"
     it "serves html on /" $ do
       inTempDirectory $ do
@@ -106,14 +101,14 @@ spec = do
 
     it "allows to have multiple modules" $ do
       inTempDirectory $ do
-        writeFile "Lib.hs" $ unindent [i|
-          module Lib where
-          text = "foo"
-        |]
-        writeFile "Main.hs" $ unindent [i|
-          import Lib
-          main = putStrLn text
-        |]
+        writeFile "Lib.hs" $ unlines $
+          "module Lib where" :
+          "text = \"foo\"" :
+          []
+        writeFile "Main.hs" $ unlines $
+          "import Lib" :
+          "main = putStrLn text" :
+          []
         app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           output <- getAndExecuteJs "all.js"
@@ -133,22 +128,19 @@ spec = do
 
     it "overwrites index.html" $ do
       inTempDirectory $ do
-        writeFile "Main.hs" $ unindent [i|
-          main = putStrLn True
-        |]
+        writeFile "Main.hs" $
+          "main = putStrLn True"
         app <- mkDevelopmentApp config
         flip runWaiSession app $ do
           _ <- get "/"
-          liftIO $ writeFile "Main.hs" $ unindent [i|
-            main = putStrLn "foo"
-          |]
+          liftIO $ writeFile "Main.hs" $
+            "main = putStrLn \"foo\""
           c :: String <- cs <$> simpleBody <$> get "/"
           liftIO $ c `shouldNotContain` "outputErrors.js"
 
     context "when used with invalid haskell files" $ do
-      let writeInvalidMain = writeFile "Main.hs" $ unindent [i|
-            main = putStrLn True
-          |]
+      let writeInvalidMain = writeFile "Main.hs" $
+            "main = putStrLn True"
           err = "Couldn't match type ‘Bool’ with ‘[Char]’"
       it "outputs compiler errors to the javascript console" $ do
         inTempDirectory $ do

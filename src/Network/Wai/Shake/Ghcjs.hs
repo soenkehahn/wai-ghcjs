@@ -1,6 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Network.Wai.Shake.Ghcjs (
@@ -20,8 +19,6 @@ import qualified Data.ByteString.Lazy as LBS
 import           Data.CaseInsensitive (mk)
 import           Data.Default ()
 import           Data.String.Conversions
-import           Data.String.Interpolate
-import           Data.String.Interpolate.Util
 import           Development.Shake as Shake
 import           Language.Haskell.TH
 import           Network.HTTP.Types
@@ -179,19 +176,19 @@ createErrorPage dir msg = do
   let jsCode = createJsToConsole msg
   createDirectoryIfMissing True dir
   LBS.writeFile (dir </> "outputErrors.js") jsCode
-  writeFile (dir </> "index.html") $ unindent [i|
-    <!DOCTYPE html>
-    <html>
-      <head>
-      </head>
-      <body>
-        <pre>
-          #{msg}
-        </pre>
-      </body>
-      <script language="javascript" src="outputErrors.js" defer></script>
-    </html>
-  |]
+  writeFile (dir </> "index.html") $ unlines $
+    "<!DOCTYPE html>" :
+    "<html>" :
+    "  <head>" :
+    "  </head>" :
+    "  <body>" :
+    "    <pre>" :
+    ("     " ++ msg) :
+    "    </pre>" :
+    "  </body>" :
+    "  <script language=\"javascript\" src=\"outputErrors.js\" defer></script>" :
+    "</html>" :
+    []
 
 writeMVar :: MVar a -> a -> IO ()
 writeMVar mvar a = modifyMVar_ mvar (const $ return a)

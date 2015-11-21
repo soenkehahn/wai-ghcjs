@@ -28,7 +28,6 @@ library
     , directory == 1.2.*
     , filepath
     , http-types
-    , interpolate
     , language-ecmascript
     , process
     , shake
@@ -61,7 +60,6 @@ executable serve-ghcjs
     , directory == 1.2.*
     , filepath
     , http-types
-    , interpolate
     , language-ecmascript
     , process
     , shake
@@ -97,7 +95,6 @@ test-suite spec
     , directory == 1.2.*
     , filepath
     , http-types
-    , interpolate
     , language-ecmascript
     , process
     , shake
