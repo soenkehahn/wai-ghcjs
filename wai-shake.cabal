@@ -130,6 +130,7 @@ test-suite spec
     , silently
     , wai-extra
     , zlib
+    , base-compat
   other-modules:
       DocTest
       Network.Wai.Shake.Ghcjs.DevelopmentSpec

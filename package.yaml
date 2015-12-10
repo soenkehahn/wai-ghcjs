@@ -67,6 +67,7 @@ tests:
       - silently
       - wai-extra
       - zlib
+      - base-compat
 
   doctest:
     main: DocTest.hs
