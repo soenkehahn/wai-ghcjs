@@ -30,11 +30,11 @@ import           Network.Wai.Shake.Ghcjs.Internal
 -- @'IO' 'Application'@
 --
 -- >>> :set -XTemplateHaskell
--- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 --   :: IO Application
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp userConfig = do

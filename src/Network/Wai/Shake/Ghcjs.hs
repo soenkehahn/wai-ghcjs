@@ -37,21 +37,21 @@ import           Network.Wai.Shake.Ghcjs.Production
 -- recompilation.
 --
 -- >>> :set -XTemplateHaskell
--- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 --   :: IO Application
 --
 -- So the 'BuildConfig' argument has to be supplied inside the @TemplateHaskell@
 -- brackets while the 'Environment' argument has to be outside:
 --
--- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "wai-shake-builds"))
+-- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
 --   :: IO Application
 --
 -- This way you can decide at runtime (e.g. depending on a command line flag)
