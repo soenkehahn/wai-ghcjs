@@ -10,6 +10,7 @@ import           System.IO.Temp
 import           WithCli
 
 import           Network.Wai.Shake.Ghcjs
+import           Network.Wai.Shake.Ghcjs.Compiler
 
 main :: IO ()
 main = withCliModified mods run

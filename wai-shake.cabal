@@ -41,10 +41,15 @@ library
     , th-lift
     , wai
     , wai-app-static >= 3.1.2
+    , directory-tree
+    , transformers
   exposed-modules:
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Compiler
+      Network.Wai.Shake.Ghcjs.Development
       Network.Wai.Shake.Ghcjs.Embedded
       Network.Wai.Shake.Ghcjs.Internal
+      Network.Wai.Shake.Ghcjs.Production
   default-language: Haskell2010
 
 executable serve-ghcjs
@@ -73,12 +78,17 @@ executable serve-ghcjs
     , th-lift
     , wai
     , wai-app-static >= 3.1.2
+    , directory-tree
+    , transformers
     , warp
     , getopt-generics == 0.12.*
   other-modules:
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Compiler
+      Network.Wai.Shake.Ghcjs.Development
       Network.Wai.Shake.Ghcjs.Embedded
       Network.Wai.Shake.Ghcjs.Internal
+      Network.Wai.Shake.Ghcjs.Production
   default-language: Haskell2010
 
 test-suite spec
@@ -108,18 +118,29 @@ test-suite spec
     , th-lift
     , wai
     , wai-app-static >= 3.1.2
+    , directory-tree
+    , transformers
     , doctest
     , hspec
     , hspec-wai
+    , time
+    , unix
     , mockery
+    , interpolate
     , QuickCheck
     , silently
     , wai-extra
     , zlib
   other-modules:
       DocTestSpec
+      Network.Wai.Shake.Ghcjs.CompilerSpec
+      Network.Wai.Shake.Ghcjs.DevelopmentSpec
+      Network.Wai.Shake.Ghcjs.InternalSpec
       Network.Wai.Shake.GhcjsSpec
       Network.Wai.Shake.Ghcjs
+      Network.Wai.Shake.Ghcjs.Compiler
+      Network.Wai.Shake.Ghcjs.Development
       Network.Wai.Shake.Ghcjs.Embedded
       Network.Wai.Shake.Ghcjs.Internal
+      Network.Wai.Shake.Ghcjs.Production
   default-language: Haskell2010
