@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Network.Wai.Shake.Ghcjs.Internal where
+module Network.Wai.Ghcjs.Internal where
 
 import           Control.Exception
 import           Control.Monad.IO.Class

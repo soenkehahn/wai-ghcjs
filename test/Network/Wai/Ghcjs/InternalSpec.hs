@@ -1,10 +1,10 @@
 
-module Network.Wai.Shake.Ghcjs.InternalSpec where
+module Network.Wai.Ghcjs.InternalSpec where
 
 import           Test.Hspec
 import           Test.Mockery.Directory
 
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Internal
 
 spec :: Spec
 spec = do

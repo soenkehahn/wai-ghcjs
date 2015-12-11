@@ -1,5 +1,5 @@
 
-module Network.Wai.Shake.Ghcjs.Embedded (mkSettingsFromDir) where
+module Network.Wai.Ghcjs.Embedded (mkSettingsFromDir) where
 
 import           Crypto.Hash.MD5 (hashlazy)
 import qualified Data.ByteString.Base64 as B64

@@ -2,7 +2,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Network.Wai.Shake.Ghcjs.DevelopmentSpec where
+module Network.Wai.Ghcjs.DevelopmentSpec where
 
 import qualified Codec.Compression.GZip (decompress)
 import           Control.Exception
@@ -26,9 +26,9 @@ import           Test.Hspec.Wai hiding (pending)
 import           Test.Hspec.Wai.Internal
 import           Test.Mockery.Directory
 
-import           Network.Wai.Shake.Ghcjs.Compiler
-import           Network.Wai.Shake.Ghcjs.Development
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Compiler
+import           Network.Wai.Ghcjs.Development
+import           Network.Wai.Ghcjs.Internal
 
 spec :: Spec
 spec = do

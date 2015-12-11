@@ -2,7 +2,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Network.Wai.Shake.Ghcjs (
+module Network.Wai.Ghcjs (
   mkDevelopmentApp,
   BuildConfig(..),
   Exec(..),
@@ -10,16 +10,14 @@ module Network.Wai.Shake.Ghcjs (
   mkProductionApp,
 
   serveGhcjs,
-  -- Environment(..),
  ) where
 
 import           Language.Haskell.TH
-import           Network.Wai
 import           System.Environment
 
-import           Network.Wai.Shake.Ghcjs.Development
-import           Network.Wai.Shake.Ghcjs.Internal
-import           Network.Wai.Shake.Ghcjs.Production
+import           Network.Wai.Ghcjs.Development
+import           Network.Wai.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Production
 
 -- * serveGhcjs
 
@@ -42,7 +40,7 @@ import           Network.Wai.Shake.Ghcjs.Production
 -- ...
 -- =====> done
 -- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
---   :: IO Application
+--   :: IO Network.Wai.Application
 --
 -- So the 'BuildConfig' argument has to be supplied inside the @TemplateHaskell@
 -- brackets while the 'Environment' argument has to be outside:
@@ -52,7 +50,7 @@ import           Network.Wai.Shake.Ghcjs.Production
 -- ...
 -- =====> done
 -- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
---   :: IO Application
+--   :: IO Network.Wai.Application
 --
 -- This way you can decide at runtime (e.g. depending on a command line flag)
 -- whether to run in 'Development' or 'Production' mode.

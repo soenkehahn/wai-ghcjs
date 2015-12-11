@@ -1,5 +1,5 @@
 
-module Network.Wai.Shake.Ghcjs.Development where
+module Network.Wai.Ghcjs.Development where
 
 import           Control.Concurrent
 import qualified Data.ByteString.Lazy as LBS
@@ -13,8 +13,8 @@ import           System.Directory as System
 import           System.Exit
 import           System.FilePath
 
-import           Network.Wai.Shake.Ghcjs.Compiler
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Compiler
+import           Network.Wai.Ghcjs.Internal
 
 -- | Creates a wai 'Application' that serves a ghcjs executable (the client
 -- application). Where to find

@@ -9,8 +9,7 @@ import           System.IO
 import           System.IO.Temp
 import           WithCli
 
-import           Network.Wai.Shake.Ghcjs
-import           Network.Wai.Shake.Ghcjs.Compiler
+import           Network.Wai.Ghcjs
 
 main :: IO ()
 main = withCliModified mods run

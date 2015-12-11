@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveAnyClass #-}
 
-module Network.Wai.Shake.Ghcjs.Compiler where
+module Network.Wai.Ghcjs.Compiler where
 
 import           Control.Monad
 import           Control.Monad.IO.Class
@@ -9,7 +9,7 @@ import           Development.Shake as Shake
 import           System.Environment
 import           System.FilePath
 
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Internal
 
 data Paths
   = Paths {

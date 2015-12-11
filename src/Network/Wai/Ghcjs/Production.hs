@@ -1,21 +1,20 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Network.Wai.Shake.Ghcjs.Production where
+module Network.Wai.Ghcjs.Production where
 
 import           Data.Default ()
 import           Data.String.Conversions
 import           Development.Shake
 import           Language.Haskell.TH
-import           Network.Wai
 import           Network.Wai.Application.Static
 import           System.FilePath
 import           System.IO
 import           WaiAppStatic.Storage.Embedded
 import           WaiAppStatic.Types
 
-import           Network.Wai.Shake.Ghcjs.Compiler
-import           Network.Wai.Shake.Ghcjs.Embedded
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Compiler
+import           Network.Wai.Ghcjs.Embedded
+import           Network.Wai.Ghcjs.Internal
 
 -- | 'mkProductionApp' is similar to 'mkDevelopmentApp' but it is meant for
 -- use when you're not developing. It compiles the client application during
@@ -35,7 +34,7 @@ import           Network.Wai.Shake.Ghcjs.Internal
 -- ...
 -- =====> done
 -- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla "test-builds"))
---   :: IO Application
+--   :: IO Network.Wai.Application
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp userConfig = do
   config <- runIO $ prepareConfig "production" userConfig -- fixme: merge runIOs

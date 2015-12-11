@@ -44,12 +44,12 @@ library
     , directory-tree
     , transformers
   exposed-modules:
-      Network.Wai.Shake.Ghcjs
-      Network.Wai.Shake.Ghcjs.Compiler
-      Network.Wai.Shake.Ghcjs.Development
-      Network.Wai.Shake.Ghcjs.Embedded
-      Network.Wai.Shake.Ghcjs.Internal
-      Network.Wai.Shake.Ghcjs.Production
+      Network.Wai.Ghcjs
+      Network.Wai.Ghcjs.Compiler
+      Network.Wai.Ghcjs.Development
+      Network.Wai.Ghcjs.Embedded
+      Network.Wai.Ghcjs.Internal
+      Network.Wai.Ghcjs.Production
   default-language: Haskell2010
 
 executable serve-ghcjs
@@ -83,12 +83,12 @@ executable serve-ghcjs
     , warp
     , getopt-generics == 0.12.*
   other-modules:
-      Network.Wai.Shake.Ghcjs
-      Network.Wai.Shake.Ghcjs.Compiler
-      Network.Wai.Shake.Ghcjs.Development
-      Network.Wai.Shake.Ghcjs.Embedded
-      Network.Wai.Shake.Ghcjs.Internal
-      Network.Wai.Shake.Ghcjs.Production
+      Network.Wai.Ghcjs
+      Network.Wai.Ghcjs.Compiler
+      Network.Wai.Ghcjs.Development
+      Network.Wai.Ghcjs.Embedded
+      Network.Wai.Ghcjs.Internal
+      Network.Wai.Ghcjs.Production
   default-language: Haskell2010
 
 test-suite spec
@@ -133,15 +133,15 @@ test-suite spec
     , base-compat
   other-modules:
       DocTest
-      Network.Wai.Shake.Ghcjs.DevelopmentSpec
-      Network.Wai.Shake.Ghcjs.InternalSpec
-      Network.Wai.Shake.GhcjsSpec
-      Network.Wai.Shake.Ghcjs
-      Network.Wai.Shake.Ghcjs.Compiler
-      Network.Wai.Shake.Ghcjs.Development
-      Network.Wai.Shake.Ghcjs.Embedded
-      Network.Wai.Shake.Ghcjs.Internal
-      Network.Wai.Shake.Ghcjs.Production
+      Network.Wai.Ghcjs.DevelopmentSpec
+      Network.Wai.Ghcjs.InternalSpec
+      Network.Wai.GhcjsSpec
+      Network.Wai.Ghcjs
+      Network.Wai.Ghcjs.Compiler
+      Network.Wai.Ghcjs.Development
+      Network.Wai.Ghcjs.Embedded
+      Network.Wai.Ghcjs.Internal
+      Network.Wai.Ghcjs.Production
   default-language: Haskell2010
 
 test-suite doctest
@@ -174,8 +174,8 @@ test-suite doctest
     , transformers
     , doctest
   other-modules:
-      Network.Wai.Shake.Ghcjs.DevelopmentSpec
-      Network.Wai.Shake.Ghcjs.InternalSpec
-      Network.Wai.Shake.GhcjsSpec
+      Network.Wai.Ghcjs.DevelopmentSpec
+      Network.Wai.Ghcjs.InternalSpec
+      Network.Wai.GhcjsSpec
       Spec
   default-language: Haskell2010

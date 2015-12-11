@@ -4,7 +4,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Network.Wai.Shake.GhcjsSpec where
+module Network.Wai.GhcjsSpec where
 
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Char
@@ -14,7 +14,7 @@ import           Test.Hspec
 import           Test.Mockery.Directory
 import           Test.QuickCheck
 
-import           Network.Wai.Shake.Ghcjs.Internal
+import           Network.Wai.Ghcjs.Internal
 
 spec :: Spec
 spec = do
