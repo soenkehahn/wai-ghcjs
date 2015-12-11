@@ -136,6 +136,7 @@ test-suite spec
       Network.Wai.Ghcjs.DevelopmentSpec
       Network.Wai.Ghcjs.InternalSpec
       Network.Wai.GhcjsSpec
+      Test.Utils
       Network.Wai.Ghcjs
       Network.Wai.Ghcjs.Compiler
       Network.Wai.Ghcjs.Development
@@ -178,4 +179,5 @@ test-suite doctest
       Network.Wai.Ghcjs.InternalSpec
       Network.Wai.GhcjsSpec
       Spec
+      Test.Utils
   default-language: Haskell2010

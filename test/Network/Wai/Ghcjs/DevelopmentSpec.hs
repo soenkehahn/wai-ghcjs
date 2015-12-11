@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -29,6 +30,7 @@ import           Test.Mockery.Directory
 import           Network.Wai.Ghcjs.Compiler
 import           Network.Wai.Ghcjs.Development
 import           Network.Wai.Ghcjs.Internal
+import           Test.Utils
 
 spec :: Spec
 spec = do
@@ -168,11 +170,4 @@ withErrorGhcjs message action = do
       exit 1
     |]
     callCommand ("chmod +x " ++ ghcjs)
-    bracket (addPath tmpDir) removePath (const action)
-  where
-    addPath dir = do
-      path <- getEnv "PATH"
-      setEnv "PATH" (dir ++ ":" ++ path)
-      return path
-    removePath path = do
-      setEnv "PATH" path
+    modifyEnvVar "PATH" (\ (Just path) -> Just (tmpDir ++ ":" ++ path)) action
