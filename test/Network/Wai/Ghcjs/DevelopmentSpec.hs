@@ -158,7 +158,7 @@ tryOften action = forM_ [1 .. 100 :: Int] $ \ _ -> silence action
 
 withErrorGhcjs :: String -> IO a -> IO a
 withErrorGhcjs message action = do
-  withSystemTempDirectory "wai-shake" $ \ tmpDir -> do
+  withSystemTempDirectory "wai-ghcjs" $ \ tmpDir -> do
     let ghcjs = tmpDir </> "ghcjs"
     writeFile ghcjs $ unindent $ [i|
       #!/usr/bin/env bash

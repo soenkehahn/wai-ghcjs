@@ -34,6 +34,6 @@ run Options{..} = do
         setPort port $
         setBeforeMainLoop (hPutStrLn stderr ("listening on " ++ show port ++ "...")) $
         defaultSettings
-  withSystemTempDirectory "wai-shake" $ \ buildDir -> do
+  withSystemTempDirectory "serve-ghcjs" $ \ buildDir -> do
     app <- mkDevelopmentApp (BuildConfig mainIs Nothing sourceDirs "." Cabal buildDir)
     runSettings settings app

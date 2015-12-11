@@ -18,21 +18,6 @@ import           Network.Wai.Ghcjs.Internal
 
 spec :: Spec
 spec = do
-
-{-
-  describe "serveGhcjs" $ do
-    context "Production" $ do
-      it "serves the generated index.html on /" $ do
-        app <- $(serveGhcjs
-          (BuildConfig "Main.hs" Nothing [] "test/resources/test-01" Vanilla
-            "wai-shake-builds"))
-          Production
-        flip runWaiSession app $ do
-          output :: String <- cs <$> decompress <$> simpleBody <$> get "/"
-          liftIO $ output `shouldContain`
-            "<script language=\"javascript\" src=\"runmain.js\" defer></script>" -}
-
-
   describe "createJsToConsole" $ do
     it "creates a js file that outputs the given string" $ do
       property $ forAllShrink

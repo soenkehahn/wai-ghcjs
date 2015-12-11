@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 
-name:           wai-shake
+name:           wai-ghcjs
 version:        0.1
 synopsis:       serve compilation results through a wai application
 description:    serve compilation results through a wai application
