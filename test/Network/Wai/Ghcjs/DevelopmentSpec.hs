@@ -131,10 +131,12 @@ spec = do
         inTempDirectory $ do
           writeFile "Main.hs" "main = putStrLn True"
           let paths = Paths {
-                jsExeDir = buildDir config </> "Main.jsexe"
+                jsExeDir = buildDir config </> "Main.jsexe",
+                shakeDir = error "unused in test",
+                targetIndexFile = error "unused in test"
               }
               (Compiler c) = developmentCompiler
-          c config paths
+          _ <- c config paths
           indexFile <- readFile (jsExeDir paths </> "index.html")
           indexFile `shouldContain` "ghcjs error message"
 

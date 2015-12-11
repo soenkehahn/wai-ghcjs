@@ -78,7 +78,9 @@ addExec exec command = case exec of
 
 findHaskellFiles :: MonadIO m => [FilePath] -> m [FilePath]
 findHaskellFiles sourceDirs = liftIO $ do
- r <- nub <$>
+ r <-
+  sort <$>
+  nub <$>
   map normalise <$>
   concat <$>
   map inner <$>
