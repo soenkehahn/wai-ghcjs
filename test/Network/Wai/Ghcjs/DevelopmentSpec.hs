@@ -6,7 +6,6 @@
 module Network.Wai.Ghcjs.DevelopmentSpec where
 
 import qualified Codec.Compression.GZip (decompress)
-import           Control.Exception
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Foldable
 import           Data.String.Conversions
@@ -16,7 +15,6 @@ import           Data.Time
 import           Data.Time.Clock.POSIX
 import           Network.Wai.Test
 import           System.Directory
-import           System.Environment.Compat
 import           System.FilePath
 import           System.IO.Silently
 import           System.IO.Temp

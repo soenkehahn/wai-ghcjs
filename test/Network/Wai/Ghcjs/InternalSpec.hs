@@ -1,10 +1,21 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Network.Wai.Ghcjs.InternalSpec where
 
+import qualified Data.ByteString.Lazy as LBS
+import           Data.Char
+import           System.IO.Silently
+import           System.Process
 import           Test.Hspec
 import           Test.Mockery.Directory
+import           Test.QuickCheck
 
 import           Network.Wai.Ghcjs.Internal
+import           Test.Utils
 
 spec :: Spec
 spec = do
@@ -64,3 +75,29 @@ spec = do
         touch "sibling/Bar.hs"
         inCurrentDirectory "project" $ do
           findHaskellFiles ["../sibling"] `shouldReturn` ["../sibling/Bar.hs"]
+
+  describe "ifDevel" $ do
+    it "returns the first argument when DEVEL is set" $ do
+      modifyEnvVar "DEVEL" (const $ Just "1") $
+        ifDevel "foo" "bar" `shouldReturn` ("foo" :: String)
+
+    it "returns the second argument when DEVEL is not set" $ do
+      modifyEnvVar "DEVEL" (const Nothing) $
+        ifDevel "foo" "bar" `shouldReturn` ("bar" :: String)
+
+  describe "createJsToConsole" $ do
+    it "creates a js file that outputs the given string" $ do
+      property $ forAllShrink
+        (listOf (suchThat arbitrary isPrint))
+        (shrinkValidList isPrint) $
+          \ ((++ "\n") -> s) ->
+            inTempDirectory $ do
+              pending
+              LBS.writeFile "test.js" (createJsToConsole s)
+              output <- capture_ $ callCommand "node test.js"
+              output `shouldBe` s
+
+shrinkValidList :: Arbitrary a => (a -> Bool) -> [a] -> [[a]]
+shrinkValidList p l =
+  filter (all p) $
+  shrinkList shrink l

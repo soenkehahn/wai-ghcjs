@@ -15,6 +15,7 @@ import           Language.ECMAScript3.Syntax.CodeGen
 import           Language.Haskell.TH.Lift
 import           System.Directory
 import           System.Directory.Tree
+import           System.Environment
 import           System.FilePath
 
 -- | Specifies how to build the client application.
@@ -122,3 +123,10 @@ createJsToConsole msg =
         show $ prettyPrint (string (doublePercentSigns s) :: Expression ())
       doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
   in cs $ unlines $ map (\ line -> "console.log(" ++ escape line ++ ");") (lines msg)
+
+ifDevel :: a -> a -> IO a
+ifDevel a b = do
+  m <- lookupEnv "DEVEL"
+  return $ case m of
+    Just _ -> a
+    Nothing -> b

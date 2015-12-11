@@ -12,8 +12,8 @@ module Network.Wai.Ghcjs (
   serveGhcjs,
  ) where
 
+import           Control.Monad
 import           Language.Haskell.TH
-import           System.Environment
 
 import           Network.Wai.Ghcjs.Development
 import           Network.Wai.Ghcjs.Internal
@@ -56,7 +56,6 @@ import           Network.Wai.Ghcjs.Production
 -- whether to run in 'Development' or 'Production' mode.
 serveGhcjs :: BuildConfig -> Q Exp
 serveGhcjs config = do
-  devel <- runIO $ lookupEnv "DEVEL"
-  case devel of
-    Just _ -> [|mkDevelopmentApp config|]
-    Nothing -> mkProductionApp config
+  join $ runIO $ ifDevel
+    [|mkDevelopmentApp config|]
+    (mkProductionApp config)
