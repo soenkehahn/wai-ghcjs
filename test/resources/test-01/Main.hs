@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 
+import           Network.Socket
 import           Network.Wai.Ghcjs
 import           Network.Wai.Handler.Warp
 import           System.IO
-import           Test.Hspec.Wai.Server
 
 main :: IO ()
 main = do
@@ -22,3 +22,12 @@ main = do
           hFlush stdout) $
         defaultSettings
   runSettingsSocket settings socket app
+
+openFreePort :: IO (Port, Socket)
+openFreePort = do
+  s <- socket AF_INET Stream defaultProtocol
+  localhost <- inet_addr "127.0.0.1"
+  bind s (SockAddrInet aNY_PORT localhost)
+  listen s 1
+  port <- socketPort s
+  return (fromIntegral port, s)

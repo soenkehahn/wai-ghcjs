@@ -11,7 +11,7 @@ executable server
   main-is: Main.hs
   build-depends:
       base
-    , hspec-wai
     , warp
     , wai-ghcjs
+    , network
   default-language: Haskell2010

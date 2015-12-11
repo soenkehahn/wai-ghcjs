@@ -2,8 +2,6 @@ resolver: nightly-2015-12-11
 
 packages:
   - '.'
-  - location: /home/shahn/src/hspec-wai
-    extra-dep: true
   - location: wai-ghcjs-copy
     extra-dep: true
 
