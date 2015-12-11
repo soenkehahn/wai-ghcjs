@@ -1,3 +1,10 @@
+name: test-project
+
 executables:
-  test-01:
+  server:
     main: Main.hs
+    dependencies:
+      - base
+      - hspec-wai
+      - warp
+      - wai-ghcjs

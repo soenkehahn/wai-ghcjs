@@ -48,7 +48,7 @@ executables:
       - src
     dependencies:
       - warp
-      - getopt-generics == 0.12.*
+      - getopt-generics == 0.13.*
 
 tests:
   spec:
@@ -75,3 +75,14 @@ tests:
       - test
     dependencies:
       - doctest
+      - base-compat
+
+  integration:
+    main: Integration.hs
+    source-dirs:
+      - test
+    dependencies:
+      - safe
+      - hspec
+      - mockery
+      - base-compat

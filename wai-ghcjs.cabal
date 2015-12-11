@@ -1,4 +1,4 @@
--- This file has been generated from package.yaml by hpack version 0.5.4.
+-- This file has been generated from package.yaml by hpack version 0.8.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -81,7 +81,7 @@ executable serve-ghcjs
     , directory-tree
     , transformers
     , warp
-    , getopt-generics == 0.12.*
+    , getopt-generics == 0.13.*
   other-modules:
       Network.Wai.Ghcjs
       Network.Wai.Ghcjs.Compiler
@@ -133,6 +133,7 @@ test-suite spec
     , base-compat
   other-modules:
       DocTest
+      Integration
       Network.Wai.Ghcjs.DevelopmentSpec
       Network.Wai.Ghcjs.InternalSpec
       Test.Utils
@@ -173,7 +174,49 @@ test-suite doctest
     , directory-tree
     , transformers
     , doctest
+    , base-compat
   other-modules:
+      Integration
+      Network.Wai.Ghcjs.DevelopmentSpec
+      Network.Wai.Ghcjs.InternalSpec
+      Spec
+      Test.Utils
+  default-language: Haskell2010
+
+test-suite integration
+  type: exitcode-stdio-1.0
+  main-is: Integration.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -fno-warn-name-shadowing
+  build-depends:
+      base == 4.*
+    , base64-bytestring
+    , bytestring
+    , case-insensitive
+    , cryptohash
+    , data-default
+    , directory == 1.2.*
+    , filepath
+    , http-types
+    , language-ecmascript
+    , process
+    , shake
+    , string-conversions
+    , template-haskell
+    , temporary
+    , text
+    , th-lift
+    , wai
+    , wai-app-static >= 3.1.2
+    , directory-tree
+    , transformers
+    , safe
+    , hspec
+    , mockery
+    , base-compat
+  other-modules:
+      DocTest
       Network.Wai.Ghcjs.DevelopmentSpec
       Network.Wai.Ghcjs.InternalSpec
       Spec
