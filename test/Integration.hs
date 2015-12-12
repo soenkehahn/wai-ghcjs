@@ -1,4 +1,5 @@
 
+import           Control.Concurrent
 import           Development.Shake
 import           Safe
 import           System.Directory
@@ -23,9 +24,9 @@ main = do
           unit $ cmd (Cwd "client") "stack setup --no-terminal"
           unit $ cmd "stack build --no-terminal"
           withServerExecutable (proc "stack" (words "exec server")) $ \ port -> do
-            Stdout index <- cmd "curl" ("localhost:" ++ show port)
+            Stdout index <- cmd "curl -s" ("localhost:" ++ show port)
             index `shouldContain` "runmain.js"
-            Stdout js <- cmd "curl" ("localhost:" ++ show port ++ "/all.js")
+            Stdout js <- cmd "curl -s" ("localhost:" ++ show port ++ "/all.js")
             writeFile "test.js" js
             Stdout result <- cmd "node test.js"
             result `shouldBe` "program output"
@@ -39,6 +40,7 @@ withServerExecutable p action = do
   port <- case readMay line :: Maybe Int of
     Nothing -> error ("unparseable port: " ++ show line)
     Just port -> return port
+  _ <- forkIO $ (hGetContents stdout >>= putStr)
   r <- action port
   terminateProcess process
   _ <- waitForProcess process
