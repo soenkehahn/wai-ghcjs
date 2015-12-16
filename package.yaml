@@ -76,6 +76,7 @@ tests:
     dependencies:
       - doctest
       - base-compat
+      - zlib
 
   integration:
     main: Integration.hs
@@ -86,3 +87,4 @@ tests:
       - hspec
       - mockery
       - base-compat
+      - zlib

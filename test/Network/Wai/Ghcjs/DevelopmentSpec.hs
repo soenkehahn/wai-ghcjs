@@ -5,8 +5,6 @@
 
 module Network.Wai.Ghcjs.DevelopmentSpec where
 
-import qualified Codec.Compression.GZip (decompress)
-import qualified Data.ByteString.Lazy as LBS
 import           Data.Foldable
 import           Data.String.Conversions
 import           Data.String.Interpolate
@@ -139,15 +137,6 @@ spec = do
           _ <- c config paths
           indexFile <- readFile (jsExeDir paths </> "index.html")
           indexFile `shouldContain` "ghcjs error message"
-
-decompress :: LBS.ByteString -> LBS.ByteString
-decompress input =
-  if gzipMagicNumber `LBS.isPrefixOf` input
-    then Codec.Compression.GZip.decompress input
-    else input
-
-gzipMagicNumber :: LBS.ByteString
-gzipMagicNumber = LBS.pack [0x1f, 0x8b]
 
 makeOlder :: FilePath -> IO ()
 makeOlder file = do
