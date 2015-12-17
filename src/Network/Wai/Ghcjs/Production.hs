@@ -6,6 +6,7 @@ import           Data.Default ()
 import           Data.String.Conversions
 import           Development.Shake
 import           Language.Haskell.TH
+import           Language.Haskell.TH.Syntax
 import           Network.Wai.Application.Static
 import           System.FilePath
 import           System.IO
@@ -37,9 +38,10 @@ import           Network.Wai.Ghcjs.Internal
 --   :: IO Network.Wai.Application
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp userConfig = do
-  config <- runIO $ prepareConfig "production" userConfig -- fixme: merge runIOs
-  outDir <- runIO $ wrapWithMessages $
+  (outDir, dependentFiles) <- runIO $ wrapWithMessages $ do
+    config <- prepareConfig "production" userConfig
     runCompiler productionCompiler config
+  mapM_ addDependentFile dependentFiles
   embeddable <- runIO $ mkSettingsFromDir outDir
   [|do
       (return () :: IO ())
@@ -57,7 +59,6 @@ mkProductionApp userConfig = do
 
 productionCompiler :: Compiler
 productionCompiler = Compiler $ \ config paths -> do
--- fixme: add files as dependencies
   let output = dropExtension $ jsExeDir paths
   unit $ cmd
     (addExec (projectExec config) "ghcjs") (mainFile config)

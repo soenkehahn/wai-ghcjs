@@ -6,6 +6,9 @@ import qualified Codec.Compression.GZip (decompress)
 import           Control.Exception
 import qualified Data.ByteString.Lazy as LBS
 import           System.Environment.Compat
+import           Test.Mockery.Directory
+
+import           Network.Wai.Ghcjs.Internal
 
 modifyEnvVar :: String -> (Maybe String -> Maybe String) -> IO a -> IO a
 modifyEnvVar var f =
@@ -28,3 +31,9 @@ decompress input =
 
 gzipMagicNumber :: LBS.ByteString
 gzipMagicNumber = LBS.pack [0x1f, 0x8b]
+
+withCompilationModeFile :: String -> IO a -> IO a
+withCompilationModeFile contents action = do
+        inTempDirectory $ do
+          writeFile compilationModeFile contents
+          action

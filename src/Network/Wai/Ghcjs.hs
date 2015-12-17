@@ -56,6 +56,6 @@ import           Network.Wai.Ghcjs.Production
 -- whether to run in 'Development' or 'Production' mode.
 serveGhcjs :: BuildConfig -> Q Exp
 serveGhcjs config = do
-  join $ runIO $ ifDevel
+  join $ runCM $ ifDevel
     [|mkDevelopmentApp config|]
     (mkProductionApp config)

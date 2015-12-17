@@ -73,15 +73,18 @@ tests:
     main: DocTest.hs
     source-dirs:
       - test
+      - src
     dependencies:
       - doctest
       - base-compat
       - zlib
+      - mockery
 
   integration:
     main: Integration.hs
     source-dirs:
       - test
+      - src
     dependencies:
       - safe
       - hspec

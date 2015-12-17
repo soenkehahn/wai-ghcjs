@@ -18,10 +18,10 @@ main = do
   hspec $ do
     describe "serveGhcjs" $ do
       it "compiles an example project in development mode" $ do
-        modifyEnvVar "DEVEL" (const $ Just "1") integrationTest
+        withCompilationModeFile "development" integrationTest
 
       it "compiles an example project in production mode" $ do
-        modifyEnvVar "DEVEL" (const Nothing) integrationTest
+        withCompilationModeFile "production" integrationTest
 
 integrationTest :: IO ()
 integrationTest = do

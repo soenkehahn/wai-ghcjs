@@ -150,6 +150,7 @@ test-suite doctest
   main-is: DocTest.hs
   hs-source-dirs:
       test
+    , src
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
@@ -176,12 +177,19 @@ test-suite doctest
     , doctest
     , base-compat
     , zlib
+    , mockery
   other-modules:
       Integration
       Network.Wai.Ghcjs.DevelopmentSpec
       Network.Wai.Ghcjs.InternalSpec
       Spec
       Test.Utils
+      Network.Wai.Ghcjs
+      Network.Wai.Ghcjs.Compiler
+      Network.Wai.Ghcjs.Development
+      Network.Wai.Ghcjs.Embedded
+      Network.Wai.Ghcjs.Internal
+      Network.Wai.Ghcjs.Production
   default-language: Haskell2010
 
 test-suite integration
@@ -189,6 +197,7 @@ test-suite integration
   main-is: Integration.hs
   hs-source-dirs:
       test
+    , src
   ghc-options: -Wall -fno-warn-name-shadowing
   build-depends:
       base == 4.*
@@ -223,4 +232,10 @@ test-suite integration
       Network.Wai.Ghcjs.InternalSpec
       Spec
       Test.Utils
+      Network.Wai.Ghcjs
+      Network.Wai.Ghcjs.Compiler
+      Network.Wai.Ghcjs.Development
+      Network.Wai.Ghcjs.Embedded
+      Network.Wai.Ghcjs.Internal
+      Network.Wai.Ghcjs.Production
   default-language: Haskell2010

@@ -5,7 +5,9 @@ module Network.Wai.Ghcjs.Compiler where
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.Default ()
+import           Data.Foldable
 import           Development.Shake as Shake
+import           System.Directory
 import           System.Environment
 import           System.FilePath
 
@@ -36,20 +38,22 @@ data Result
   = Success
   | ErrorIndex
 
-runCompiler :: Compiler -> BuildConfig -> IO FilePath
+runCompiler :: Compiler -> BuildConfig -> IO (FilePath, [FilePath])
 runCompiler (Compiler compiler) config = withPaths config $ \ paths -> do
   let options = shakeOptions{
         shakeFiles = shakeDir paths
       }
+  haskellFiles <- findHaskellFiles (getSourceDirs config)
   withArgs [] $ shakeArgs options $ do
     want [targetIndexFile paths]
     targetIndexFile paths %> \ _ -> do
-      findHaskellFiles (getSourceDirs config) >>= need
+      need haskellFiles
       result <- liftIO $ compiler config paths
       case result of
         Success -> do
           forM_ (customIndexFile config) $ \ customIndex -> do
             copyFileChanged customIndex (targetIndexFile paths)
         ErrorIndex -> return ()
-  return $ jsExeDir paths
--- fixme: add files as dependencies
+  dependentFiles <- mapM canonicalizePath
+    (haskellFiles ++ toList (customIndexFile config))
+  return (jsExeDir paths, dependentFiles)

@@ -1,22 +1,29 @@
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
 
 module Network.Wai.Ghcjs.Internal where
 
+import           Control.Arrow
 import           Control.Exception
+import           Control.Monad
 import           Control.Monad.IO.Class
 import qualified Data.ByteString.Lazy as LBS
+import           Data.Char
 import           Data.Default ()
 import           Data.List
 import           Data.String.Conversions
 import           Language.ECMAScript3.PrettyPrint
 import           Language.ECMAScript3.Syntax
 import           Language.ECMAScript3.Syntax.CodeGen
+import           Language.Haskell.TH
 import           Language.Haskell.TH.Lift
+import           Language.Haskell.TH.Syntax
 import           System.Directory
 import           System.Directory.Tree
-import           System.Environment
 import           System.FilePath
+import           System.IO
 
 -- | Specifies how to build the client application.
 data BuildConfig = BuildConfig {
@@ -124,9 +131,94 @@ createJsToConsole msg =
       doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
   in cs $ unlines $ map (\ line -> "console.log(" ++ escape line ++ ");") (lines msg)
 
-ifDevel :: a -> a -> IO a
+ifDevel :: a -> a -> CM a
 ifDevel a b = do
-  m <- lookupEnv "DEVEL"
-  return $ case m of
-    Just _ -> a
-    Nothing -> b
+  mode <- readCompilationMode
+  return $ case mode of
+    Development -> a
+    Production -> b
+
+data CompilationMode
+  = Production
+  | Development
+  deriving (Eq, Ord, Show)
+
+compilationModeFile :: FilePath
+compilationModeFile = "ghcjs-compilation-mode"
+
+readCompilationMode :: CM CompilationMode
+readCompilationMode = do
+  file <- IO $ do
+    createIfMissing
+    canonicalizePath compilationModeFile
+  AddDependentFile file
+  IO $ do
+    contents <- readFile file
+    case parse contents of
+      Right m -> return m
+      Left () -> throwIO $ ErrorCall
+        ("invalid " ++ compilationModeFile ++ " file:\n" ++ contents)
+  where
+    parse :: String -> Either () CompilationMode
+    parse =
+      lines >>>
+      map (dropWhile isSpace) >>>
+      filter (not . ("#" `isPrefixOf`)) >>>
+      concatMap words >>>
+      (\ case
+        ["development"] -> return Development
+        ["production"] -> return Production
+        _ -> Left ())
+
+createIfMissing :: IO ()
+createIfMissing = do
+  exists <- doesFileExist compilationModeFile
+  when (not exists) $ do
+    writeFile compilationModeFile $ unlines $
+      "# This file controls the compilation mode for the client code through ghcjs." :
+      "" :
+      "# In 'production' mode the client code will be compiled while compiling" :
+      "# the server (through template haskell). The resulting assets (index.html" :
+      "# and javascript files will be embedded into the executable. This allows" :
+      "# to distribute the executable as a single file." :
+      "production" :
+      "" :
+      "# In 'development' mode the javascript files will be compiled on the fly" :
+      "# from the source files on http requests. Recompilation will be triggered" :
+      "# by changes on disks to the source files." :
+      "# development" :
+      []
+    hPutStrLn stderr $ unlines $
+      "INFO: The compilation mode of wai-ghcjs is controlled through a file called" :
+      (compilationModeFile ++ ". That file didn't exist, so a default file was") :
+      "written, including further information." :
+      []
+
+data CM a where
+  (:>>=) :: CM a -> (a -> CM b) -> CM b
+
+  IO :: IO a -> CM a
+  AddDependentFile :: FilePath -> CM ()
+
+instance Functor CM where
+  fmap f = \ case
+    a :>>= b -> a :>>= (\ x -> f <$> b x)
+    IO action -> IO (fmap f action)
+    AddDependentFile file ->
+      AddDependentFile file :>>= (return . f)
+
+instance Applicative CM where
+  pure = IO . pure
+  fA <*> xA = do
+    f <- fA
+    x <- xA
+    pure $ f x
+
+instance Monad CM where
+  (>>=) = (:>>=)
+
+runCM :: CM a -> Q a
+runCM = \ case
+  a :>>= b -> runCM a >>= runCM . b
+  IO action -> runIO action
+  AddDependentFile file -> addDependentFile file

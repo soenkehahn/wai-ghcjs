@@ -45,7 +45,7 @@ mkSimpleApp app request respond = app request >>= respond
 
 developmentApp :: MVar () -> Compiler -> BuildConfig -> Application
 developmentApp mvar compiler config = mkSimpleApp $ \ request -> do
-  outDir <- forceToSingleThread mvar $ do
+  (outDir, _) <- forceToSingleThread mvar $ do
     runCompiler compiler config
   let serveIndex = serveFile "text/html" (outDir </> "index" <.> "html")
   case pathInfo request of
