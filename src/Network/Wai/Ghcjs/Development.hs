@@ -24,7 +24,7 @@ import           Network.Wai.Ghcjs.Internal
 -- @index.html@ are also served.
 --
 -- 'mkDevelopmentApp' compiles the Haskell sources on the fly. It will also
--- recompile them when they have changed on disk. In addition in case of compile
+-- recompile them when they have changed on disk. In case of compile
 -- errors it will deliver an html page that contains the error messages.
 --
 -- This allows a workflow similar to those known from dynamic web programming

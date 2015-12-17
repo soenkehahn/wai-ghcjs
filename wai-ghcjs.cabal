@@ -45,6 +45,7 @@ library
     , transformers
   exposed-modules:
       Network.Wai.Ghcjs
+  other-modules:
       Network.Wai.Ghcjs.Compiler
       Network.Wai.Ghcjs.Development
       Network.Wai.Ghcjs.Embedded

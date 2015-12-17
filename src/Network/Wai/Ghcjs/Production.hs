@@ -19,15 +19,15 @@ import           Network.Wai.Ghcjs.Internal
 
 -- | 'mkProductionApp' is similar to 'mkDevelopmentApp' but it is meant for
 -- use when you're not developing. It compiles the client application during
--- compilation of the server 'Application' using @TemplateHaskell@. It doesn't
--- recompile any files on changes. In addition it embeds the compilation results
+-- compilation of the server 'Application' using @TemplateHaskell@. In addition
+-- it embeds the compilation results
 -- into the executable, so it is completely self-contained. (I.e. you can scp
 -- the executable to another server and it will be able to deliver the complete
 -- client application.)
 --
 -- The spliced in fragment has type
 --
--- @'IO' 'Application'@
+-- @'IO' 'Network.Wai.Application'@
 --
 -- >>> :set -XTemplateHaskell
 -- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))

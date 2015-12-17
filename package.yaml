@@ -39,6 +39,8 @@ dependencies:
 library:
   source-dirs:
     - src
+  exposed-modules:
+    Network.Wai.Ghcjs
 
 executables:
   serve-ghcjs:
