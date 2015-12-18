@@ -9,14 +9,9 @@ import           Control.Arrow
 import           Control.Exception
 import           Control.Monad
 import           Control.Monad.IO.Class
-import qualified Data.ByteString.Lazy as LBS
 import           Data.Char
 import           Data.Default ()
 import           Data.List
-import           Data.String.Conversions
-import           Language.ECMAScript3.PrettyPrint
-import           Language.ECMAScript3.Syntax
-import           Language.ECMAScript3.Syntax.CodeGen
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Lift
 import           Language.Haskell.TH.Syntax
@@ -122,14 +117,6 @@ inCurrentDirectory dir action = bracket before after (const action)
       return old
     after old = do
       setCurrentDirectory old
-
-createJsToConsole :: String -> LBS.ByteString
-createJsToConsole msg =
-  let escape :: String -> String
-      escape s =
-        show $ prettyPrint (string (doublePercentSigns s) :: Expression ())
-      doublePercentSigns = concatMap (\ c -> if c == '%' then "%%" else [c])
-  in cs $ unlines $ map (\ line -> "console.log(" ++ escape line ++ ");") (lines msg)
 
 ifDevel :: a -> a -> CM a
 ifDevel a b = do

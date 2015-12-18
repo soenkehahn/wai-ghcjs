@@ -24,7 +24,6 @@ dependencies:
   - directory == 1.2.*
   - filepath
   - http-types
-  - language-ecmascript
   - process
   - shake
   - string-conversions

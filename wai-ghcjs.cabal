@@ -38,7 +38,6 @@ library
     , directory == 1.2.*
     , filepath
     , http-types
-    , language-ecmascript
     , process
     , shake
     , string-conversions
@@ -76,7 +75,6 @@ executable serve-ghcjs
     , directory == 1.2.*
     , filepath
     , http-types
-    , language-ecmascript
     , process
     , shake
     , string-conversions
@@ -116,7 +114,6 @@ test-suite spec
     , directory == 1.2.*
     , filepath
     , http-types
-    , language-ecmascript
     , process
     , shake
     , string-conversions
@@ -170,7 +167,6 @@ test-suite doctest
     , directory == 1.2.*
     , filepath
     , http-types
-    , language-ecmascript
     , process
     , shake
     , string-conversions
@@ -217,7 +213,6 @@ test-suite integration
     , directory == 1.2.*
     , filepath
     , http-types
-    , language-ecmascript
     , process
     , shake
     , string-conversions

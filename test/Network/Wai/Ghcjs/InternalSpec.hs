@@ -10,15 +10,12 @@
 module Network.Wai.Ghcjs.InternalSpec where
 
 import           Control.Exception
-import qualified Data.ByteString.Lazy as LBS
-import           Data.Char
 import           Data.Foldable
 import           Data.String.Interpolate
 import           Data.String.Interpolate.Util
 import           System.Directory
 import           System.IO
 import           System.IO.Silently
-import           System.Process
 import           Test.Hspec
 import           Test.Mockery.Directory
 import           Test.QuickCheck
@@ -165,18 +162,6 @@ spec = do
     it "returns the second argument when ./ghcjs-compilation-mode is set to 'production'" $ do
       withCompilationModeFile "production" $ do
         (fst <$> simulateCM (ifDevel "foo" "bar")) `shouldReturn` ("bar" :: String)
-
-  describe "createJsToConsole" $ do
-    it "creates a js file that outputs the given string" $ do
-      property $ forAllShrink
-        (listOf (suchThat arbitrary isPrint))
-        (shrinkValidList isPrint) $
-          \ ((++ "\n") -> s) ->
-            inTempDirectory $ do
-              pending
-              LBS.writeFile "test.js" (createJsToConsole s)
-              output <- capture_ $ callCommand "node test.js"
-              output `shouldBe` s
 
 shrinkValidList :: Arbitrary a => (a -> Bool) -> [a] -> [[a]]
 shrinkValidList p l =

@@ -88,9 +88,7 @@ developmentCompiler = Compiler $ \ config paths -> do
 
 createErrorPage :: FilePath -> String -> IO ()
 createErrorPage dir msg = do
-  let jsCode = createJsToConsole msg
   createDirectoryIfMissing True dir
-  LBS.writeFile (dir </> "outputErrors.js") jsCode -- fixme: remove
   writeFile (dir </> "index.html") $ unlines $
     "<!DOCTYPE html>" :
     "<html>" :
@@ -101,6 +99,5 @@ createErrorPage dir msg = do
     ("     " ++ msg) :
     "    </pre>" :
     "  </body>" :
-    "  <script language=\"javascript\" src=\"outputErrors.js\" defer></script>" :
     "</html>" :
     []
