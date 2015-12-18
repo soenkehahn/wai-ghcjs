@@ -11,7 +11,8 @@ ghc-options:
   "-Wall -fno-warn-name-shadowing"
 
 data-files:
-  - test/test-project/Main.hs
+  - test/test-project/**/*
+  - stack.yaml
 
 dependencies:
   - base == 4.*

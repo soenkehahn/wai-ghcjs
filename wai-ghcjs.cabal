@@ -15,7 +15,14 @@ build-type:     Simple
 cabal-version:  >= 1.10
 
 data-files:
+    stack.yaml
+    test/test-project/client/Main.hs
+    test/test-project/client/package.yaml
+    test/test-project/client/stack.yaml
     test/test-project/Main.hs
+    test/test-project/package.yaml
+    test/test-project/stack.yaml
+    test/test-project/test-project.cabal
 
 library
   hs-source-dirs:
