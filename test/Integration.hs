@@ -5,12 +5,10 @@ import           Data.String.Conversions
 import           Development.Shake
 import           Safe
 import           System.Directory
-import           System.Exit
 import           System.FilePath
 import           System.IO
 import           System.Process
 import           Test.Hspec
-import           Test.Mockery.Directory
 
 import           Test.Utils
 
@@ -45,7 +43,7 @@ integrationTest repo = do
 
 curl :: String -> IO String
 curl url = do
-  (Nothing, Just stdout, Nothing, process) <- createProcess (proc "curl" ["-s", url]) {
+  (Nothing, Just stdout, Nothing, _) <- createProcess (proc "curl" ["-s", url]) {
     std_out = CreatePipe
   }
   output <- BS.hGetContents stdout
