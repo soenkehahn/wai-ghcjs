@@ -11,7 +11,7 @@ ghc-options:
   "-Wall -fno-warn-name-shadowing"
 
 data-files:
-  - test/resources/test-01/Main.hs
+  - test/test-project/Main.hs
 
 dependencies:
   - base == 4.*

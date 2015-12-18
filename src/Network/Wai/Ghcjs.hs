@@ -32,12 +32,12 @@ import           Network.Wai.Ghcjs.Production
 -- @'IO' 'Network.Wai.Application'@
 --
 -- >>> :set -XTemplateHaskell
--- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))
+-- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/test-project/client" Vanilla "test-builds"))
 -- ...
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))
+-- $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/test-project/client" Vanilla "test-builds"))
 --   :: IO Network.Wai.Application
 serveGhcjs :: BuildConfig -> Q Exp
 serveGhcjs config = do

@@ -34,6 +34,6 @@ gzipMagicNumber = LBS.pack [0x1f, 0x8b]
 
 withCompilationModeFile :: String -> IO a -> IO a
 withCompilationModeFile contents action = do
-        inTempDirectory $ do
-          writeFile compilationModeFile contents
-          action
+  inTempDirectory $ do
+    writeFile compilationModeFile contents
+    action

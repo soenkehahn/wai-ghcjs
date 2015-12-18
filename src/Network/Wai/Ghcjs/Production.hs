@@ -30,11 +30,11 @@ import           Network.Wai.Ghcjs.Internal
 -- @'IO' 'Network.Wai.Application'@
 --
 -- >>> :set -XTemplateHaskell
--- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))
+-- >>> :type $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/test-project/client" Vanilla "test-builds"))
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done
--- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))
+-- $(mkProductionApp (BuildConfig "Main.hs" Nothing [] "test/test-project/client" Vanilla "test-builds"))
 --   :: IO Network.Wai.Application
 mkProductionApp :: BuildConfig -> Q Exp
 mkProductionApp userConfig = do
