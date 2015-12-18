@@ -33,6 +33,7 @@ import           Network.Wai.Ghcjs.Production
 --
 -- >>> :set -XTemplateHaskell
 -- >>> :type $(serveGhcjs (BuildConfig "Main.hs" Nothing [] "test/resources/test-01/client" Vanilla "test-builds"))
+-- ...
 -- =====> building client code with ghcjs
 -- ...
 -- =====> done

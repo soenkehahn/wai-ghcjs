@@ -188,11 +188,8 @@ createIfMissing = do
       "# by changes on disks to the source files." :
       "# development" :
       []
-    hPutStrLn stderr $ unlines $
-      "INFO: The compilation mode of wai-ghcjs is controlled through a file called" :
-      (compilationModeFile ++ ". That file didn't exist, so a default file was") :
-      "written, including further information." :
-      []
+    hPutStrLn stderr $
+      "INFO: writing default " ++ compilationModeFile
 
 data CM a where
   (:>>=) :: CM a -> (a -> CM b) -> CM b
